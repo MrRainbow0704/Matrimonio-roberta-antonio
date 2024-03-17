@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block nav_accedi %}active{% endblock nav_accedi %}
+
+{% block main %}
+<h2 class="fw-semibold">Accedi</h2>
+<section class="d-flex justify-content-center">
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label" for="nome">Nome:</label>
+            <input class="form-control" type="text" name="nome" id="nome" placeholder="Nome...">
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="cognome">Cognome:</label>
+            <input class="form-control" type="text" name="cognome" id="cognome" placeholder="Cognome...">
+        </div>
+        <button class="btn btn-primary" type="submit">Accedi</button>
+    </form>
+</section>
+{% endblock main %}

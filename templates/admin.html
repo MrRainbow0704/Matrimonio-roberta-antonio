@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h2 class="fw-semibold">Admin page</h2>
+<div class="d-flex justify-content-between align-items-baseline flex-wrap">
+    <section class="p-2 flex-grow-0 table-responsive">
+        <h3>Famiglie</h3>
+        <table class="table table-hover table-bordered">
+            <thead>
+                <th>Nome</th>
+                <th>Elimina</th>
+            </thead>
+            <tbody>
+                {% for famiglia in famiglie %}
+                <tr>
+                    <td>
+                        {{ famiglia.Nome }}
+                    </td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="rimuovi-famiglia" value="1">
+                            <input type="hidden" name="famiglia" value="{{ famiglia.Id }}">
+                            <button class="btn btn-primary btn-danger" type="submit">Elimina</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="p-2 flex-grow-0">
+        <h3>Aggiungi una famiglia</h3>
+        <form method="post">
+            <input type="hidden" name="aggiungi-famiglia" value="1">
+            <div class="mb-3">
+                <label class="form-label" for="nome">Nome</label>
+                <input class="form-control" type="text" name="nome" id="nome">
+            </div>
+            <button class="btn btn-primary" type="submit">Aggiungi</button>
+        </form>
+    </section>
+
+
+    <section class="p-2 flex-grow-0 table-responsive">
+        <h3>Invitati</h3>
+        <table class="table table-hover table-bordered">
+            <thead>
+                <th>Nome</th>
+                <th>Cognome</th>
+                <th>Famiglia</th>
+                <th>Partecipa</th>
+                <th>Allergie</th>
+                <th>Tipo</th>
+                <th>Età</th>
+                <th>Elimina</th>
+            </thead>
+            <tbody>
+                {% for invitato in invitati %}
+                <tr>
+                    <td>
+                        {{ invitato.Nome }}
+                    </td>
+                    <td>
+                        {{ invitato.Cognome }}
+                    </td>
+                    <td>
+                        {{ invitato.Famiglia }}
+                    </td>
+                    <td>
+                        {{ invitato.Partecipa }}
+                    </td>
+                    <td>
+                        {% for allergia in invitato.Allergie %}
+
+                        {{ allergia }},
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {{ invitato.Tipo }}
+                    </td>
+                    <td>
+                        {{ invitato.Età }}
+                    </td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="rimuovi-invitato" value="1">
+                            <input type="hidden" name="invitato" value="{{ invitato.Id }}">
+                            <button class="btn btn-primary btn-danger" type="submit">Elimina</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="p-2 flex-grow-0">
+        <h3>Aggiungi un invitato</h3>
+        <form method="post">
+            <input type="hidden" name="aggiungi-invitato" value="1">
+            <div class="mb-3">
+                <label class="form-label" for="nome">Nome</label>
+                <input class="form-control" type="text" name="nome" id="nome">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="cognome">Cognome</label>
+                <input class="form-control" type="text" name="cognome" id="cognome">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="famiglia">Famiglia</label>
+                <select class="form-select" name="famiglia" id="famiglia">
+                    <option value="" selected>Scegli una famiglia...</option>
+                    {% for famiglia in famiglie %}
+                    <option value="{{ famiglia.Id }}">
+                        {{ famiglia.Nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Aggiungi</button>
+        </form>
+    </section>
+</div>
+{% endblock main %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block nav_conferma  %}active{% endblock nav_conferma %}
+
+{% block main %}
+<h2 class="fw-semibold">Registra le tue presenze</h2>
+
+<div class="d-flex justify-content-between align-items-baseline flex-wrap">
+    {% for membro in famiglia %}
+    <section class="p-2 m-2 flex-grow-1" id="membro-{{ membro.Id }}">
+        <h3>
+
+            {{ membro.Nome.capitalize() }}
+
+            {{ membro.Cognome.capitalize() }}
+        </h3>
+        <form method="post">
+            <input type="hidden" name="membro" value="{{ membro.Id }}">
+            <label class="form-label">Partecipa</label>
+            <div class="mb-3 Id-tipo" id="{{ membro.Id }}-partecipa">
+                <span class="">
+                    <input type="radio" class="form-check-input" name="partecipa" id="{{ membro.Id }}-partecipa-si"
+                        value="1" {% if membro.Partecipa %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-partecipa-si">Si</label>
+                </span>
+                <span class="">
+                    <input type="radio" class="form-check-input" name="partecipa" id="{{ membro.Id }}-partecipa-no"
+                        value="0" {% if not membro.Partecipa %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-partecipa-no">No</label>
+                </span>
+            </div>
+            <label class="form-label">Tipo</label>
+            <div class="mb-3" id="{{ membro.Id }}-tipo">
+                <span class="">
+                    <input onclick="selezionaAdulto({{ membro.Id }});" class="form-check-input" type="radio" name="tipo"
+                        id="{{ membro.Id }}-tipo-adulto" value="adulto" {% if membro.Tipo == "adulto" %}
+                        checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-tipo-adulto">Adulto</label>
+                </span>
+                <span class="">
+                    <input onclick="selezionaBambino({{ membro.Id }});" class="form-check-input" type="radio"
+                        name="tipo" id="{{ membro.Id }}-tipo-bambino" value="bambino" {% if membro.Tipo == "bambino" %}
+                        checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-tipo-bambino">Bambino</label>
+                </span>
+            </div>
+            <!-- INIZIO sezione solo per bambini -->
+            <label class="form-label solo-bambino-{{ membro.Id }}" {% if membro.Tipo == "adulto" %}
+                hidden{% endif %}>Età bambino</label>
+            <div class="mb-3 solo-bambino-{{ membro.Id }}" id="{{ membro.Id }}-età" {% if membro.Tipo == "adulto" %}
+                hidden{% endif %}>
+                <span class="">
+                    <input class="form-check-input" type="radio" name="età" id="{{ membro.Id }}-età-10+" value="10+"
+                        {% if membro.Età == "10+" %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-età-10+">Più di 10 anni</label>
+                </span>
+                <span class="">
+                    <input class="form-check-input" type="radio" name="età" id="{{ membro.Id }}-età-4-10" value="4-10"
+                        {% if membro.Età == "4-10" %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-età-4-10">Da 4 a 10 anni</label>
+                </span>
+                <span class="">
+                    <input class="form-check-input" type="radio" name="età" id="{{ membro.Id }}-età-4-" value="4-"
+                        {% if membro.Età == "4-" %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.Id }}-età-4-">Meno di 4 anni</label>
+                </span>
+            </div>
+            <!-- FINE sezione solo per bambini -->
+            <label class="form-label">Allergie</label>
+            <div class="mb-3 d-flex flex-wrap flex-column" id="{{ membro.Id }}-allergie">
+                <span class="">
+                    <input {% if "anidride-solforosa" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-anidride-solforosa"
+                        id="{{ membro.Id }}-allergie-anidride-solforosa" value="anidride-solforosa">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-anidride-solforosa">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/anidride-solforosa.png') }}">
+                        Anidride solforosa
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "arachidi" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-arachidi" id="{{ membro.Id }}-allergie-arachidi"
+                        value="arachidi">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-arachidi">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/arachidi.png') }}">
+                        Arachidi
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "crostacei" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-crostacei" id="{{ membro.Id }}-allergie-crostacei"
+                        value="crostacei">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-crostacei">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/crostacei.png') }}">
+                        Crostacei
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "frutta-a-guscio" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-frutta-a-guscio" id="{{ membro.Id }}-allergie-frutta-a-guscio"
+                        value="frutta-a-guscio">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-frutta-a-guscio">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/frutta-a-guscio.png') }}">
+                        Frutta a guscio
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "glutine" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-glutine" id="{{ membro.Id }}-allergie-glutine" value="glutine">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-glutine">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/glutine.png') }}">
+                        Glutine
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "latte" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-latte" id="{{ membro.Id }}-allergie-latte" value="latte">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-latte">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/latte.png') }}">
+                        Latte
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "lupini" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-lupini" id="{{ membro.Id }}-allergie-lupini" value="lupini">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-lupini">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/lupini.png') }}">
+                        Lupini
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "molluschi" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-molluschi" id="{{ membro.Id }}-allergie-molluschi"
+                        value="molluschi">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-molluschi">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/molluschi.png') }}">
+                        Molluschi
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "pesce" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-pesce" id="{{ membro.Id }}-allergie-pesce" value="pesce">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-pesce">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/pesce.png') }}">
+                        Pesce
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "sedano" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-sedano" id="{{ membro.Id }}-allergie-sedano" value="sedano">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-sedano">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/sedano.png') }}">
+                        Sedano
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "senape" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-senape" id="{{ membro.Id }}-allergie-senape" value="senape">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-senape">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/senape.png') }}">
+                        Senape
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "sesamo" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-sesamo" id="{{ membro.Id }}-allergie-sesamo" value="sesamo">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-sesamo">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/sesamo.png') }}">
+                        Sesamo
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "soia" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-soia" id="{{ membro.Id }}-allergie-soia" value="soia">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-soia">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/soia.png') }}">
+                        Soia
+                    </label>
+                </span>
+                <span class="">
+                    <input {% if "uova" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-uova" id="{{ membro.Id }}-allergie-uova" value="uova">
+                    <label class="form-check-label" for="{{ membro.Id }}-allergie-uova">
+                        <img class="icon" src="{{ url_for('static', filename='img/allergie/uova.png') }}">
+                        Uova
+                    </label>
+                </span>
+            </div>
+            <button class="btn btn-primary" type="submit">Salva</button>
+        </form>
+    </section>
+    {% endfor %}
+    <section class="p-2">
+        <h3>Aggiungi persona al gruppo familiare</h3>
+        <form method="post">
+            <input type="hidden" name="nuovo" value="1">
+            <div class="mb-3">
+                <label class="form-label" for="nome">Nome</label>
+                <input class="form-control" type="text" name="nome" id="nome">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="cognome">Cognome</label>
+                <input class="form-control" type="text" name="cognome" id="cognome">
+            </div>
+            <button class="btn btn-primary" type="submit">Aggiungi</button>
+        </form>
+    </section>
+</div>
+{% endblock main %}
