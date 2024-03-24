@@ -84,48 +84,38 @@
             </div>
         </div>
     </nav>
-    <section>
-        {% if ok %}
-        <div class="m-2 alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i>
-            <strong>Operazione eseguita con successo: </strong>
-
-            {{ ok }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endif %}
-
+    <div>
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                {% if category == "errore" %}
-                <div class="m-2 alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <strong>Errore rilevato: </strong>
-                
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% elif category == "ok" %}
-                <div class="m-2 alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <strong>Operazione eseguita con successo: </strong>
-                
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% else %}
-                <div class="m-2 alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == "errore" %}
+                    <div class="m-2 alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Errore rilevato: </strong>
+                    
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% elif category == "ok" %}
+                    <div class="m-2 alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <strong>Operazione eseguita con successo: </strong>
+                    
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% else %}
+                    <div class="m-2 alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill"></i>
+                    
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         {% endwith %}
-    </section>
+    </div>
     <main class="px-3 pt-3 fs-5">
         {% block main %}
         {% endblock main %}

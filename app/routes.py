@@ -49,7 +49,6 @@ def admin() -> Response:
                 return (
                     render_template(
                         "admin.html",
-                        ok="Utente creato con successo.",
                         invitati=invitati,
                         famiglie=famiglie,
                     ),
