@@ -63,7 +63,7 @@ class DBHandler:
                 break
         else:
             raise ConnectionError("Tentativi di connessione al database terminati.")
-        
+
         self.__conn = conn
         return self.__conn
 
@@ -113,13 +113,27 @@ class DBHandler:
         try:
             self.__cur.execute(query, param)
         except mysql.Error as err:
-            print(f"Error: '{err}'{f"\nQuery: '{self.__cur.statement}'" if self.__cur.statement is not None else ""}")
+            try:
+                if not self.__cur.statement is None:
+                    last = self.__cur.statement
+                else:
+                    last = ""
+            except Exception:
+                pass
+            print(f"Error: '{err}'\nQuery: '{last}'")
             return False
 
         try:
             res = self.__cur.fetchall()
         except mysql.Error as err:
-            print(f"Error: '{err}'{f"\nQuery: '{self.__cur.statement}'" if self.__cur.statement is not None else ""}")
+            try:
+                if not self.__cur.statement is None:
+                    last = self.__cur.statement
+                else:
+                    last = ""
+            except Exception:
+                pass
+            print(f"Error: '{err}'\nQuery: '{last}'")
             res = [None]
 
         self.__cur.reset()
