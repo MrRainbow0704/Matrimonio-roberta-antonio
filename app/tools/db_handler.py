@@ -113,13 +113,13 @@ class DBHandler:
         try:
             self.__cur.execute(query, param)
         except mysql.Error as err:
-            print(f"Error: '{err}'\nQuery: '{self.__cur.statement}'")
+            print(f"Error: '{err}'{f"\nQuery: '{self.__cur.statement}'" if self.__cur.statement is not None else ""}")
             return False
 
         try:
             res = self.__cur.fetchall()
         except mysql.Error as err:
-            print(f"Error: '{err}'\nQuery: '{self.__cur.statement}'")
+            print(f"Error: '{err}'{f"\nQuery: '{self.__cur.statement}'" if self.__cur.statement is not None else ""}")
             res = [None]
 
         self.__cur.reset()
