@@ -8,6 +8,26 @@ def home() -> Response:
     return render_template("home.html"), 200
 
 
+@app.route("/contatti")
+def contatti() -> Response:
+    return render_template("contatti.html"), 200
+
+
+@app.route("/programma")
+def programma() -> Response:
+    return render_template("programma.html"), 200
+
+
+@app.route("/location")
+def location() -> Response:
+    return render_template("location.html"), 200
+
+
+@app.route("/lista_nozze")
+def lista_nozze() -> Response:
+    return render_template("lista_nozze.html"), 200
+
+
 @app.route("/admin", methods=["GET", "POST"])
 @tools.requires_auth
 def admin() -> Response:
@@ -23,10 +43,20 @@ def admin() -> Response:
                 ]
                 i["Partecipa"] = "Si" if i["Partecipa"] else "No"
                 i["Famiglia"] = tools.get_family_from_id(DB, i["Famiglia"])["Nome"]
-
         return (invitati, famiglie)
 
     if request.method == "POST":
+        if request.form.get("csrf") != session.get("csrf"):
+            invitati, famiglie = fetch_invitati_famiglie()
+            flash("La richiesta non contiene il CSRF token.", "errore")
+            return (
+                render_template(
+                    "admin.html",
+                    invitati=invitati,
+                    famiglie=famiglie,
+                ),
+                403,
+            )
         if request.form.get("aggiungi-invitato"):
             nome = request.form.get("nome").lower().strip()
             cognome = request.form.get("cognome").lower().strip()
@@ -54,6 +84,7 @@ def admin() -> Response:
                     ),
                     200,
                 )
+
             invitati, famiglie = fetch_invitati_famiglie()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
@@ -66,7 +97,6 @@ def admin() -> Response:
             )
         elif request.form.get("rimuovi-invitato"):
             invitato = int(request.form.get("invitato"))
-
             if tools.empty_input(invitato):
                 invitati, famiglie = fetch_invitati_famiglie()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
@@ -78,6 +108,7 @@ def admin() -> Response:
                     ),
                     400,
                 )
+
             if tools.delete_user(DB, invitato):
                 invitati, famiglie = fetch_invitati_famiglie()
                 flash("Utente rimosso con successo.", "ok")
@@ -89,6 +120,7 @@ def admin() -> Response:
                     ),
                     200,
                 )
+
             invitati, famiglie = fetch_invitati_famiglie()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
@@ -102,7 +134,6 @@ def admin() -> Response:
             )
         elif request.form.get("aggiungi-famiglia"):
             nome = request.form.get("nome").lower().strip()
-
             if tools.empty_input(nome):
                 invitati, famiglie = fetch_invitati_famiglie()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
@@ -126,6 +157,7 @@ def admin() -> Response:
                     ),
                     200,
                 )
+
             invitati, famiglie = fetch_invitati_famiglie()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
@@ -138,7 +170,6 @@ def admin() -> Response:
             )
         elif request.form.get("rimuovi-famiglia"):
             famiglia = int(request.form.get("famiglia"))
-
             if tools.empty_input(famiglia):
                 invitati, famiglie = fetch_invitati_famiglie()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
@@ -162,6 +193,7 @@ def admin() -> Response:
                     ),
                     200,
                 )
+
             invitati, famiglie = fetch_invitati_famiglie()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
@@ -194,6 +226,11 @@ def conferma() -> Response:
 
     if tools.is_logged_in(DB):
         if request.method == "POST":
+            if request.form.get("csrf") != session.get("csrf"):
+                membri = fetch_membri()
+                flash("La richiesta non contiene il CSRF token.", "errore")
+                return render_template("conferma.html", famiglia=membri), 403
+
             if request.form.get("membro"):
                 membro = request.form.get("membro")
                 tipo = request.form.get("tipo")
@@ -228,39 +265,20 @@ def conferma() -> Response:
                 ):
                     membri = fetch_membri()
                     flash("Assicurati di aver riempito tutti i campi.", "errore")
-                    return (
-                        render_template(
-                            "conferma.html",
-                            famiglia=membri,
-                        ),
-                        400,
-                    )
-
+                    return render_template("conferma.html", famiglia=membri), 400
                 with tools.DBHandler(**DB) as dbh:
                     res = dbh.query(
                         "UPDATE Invitati SET Tipo=%s, Allergie=%s, Partecipa=%s, Età=%s WHERE Id=%s;",
                         (tipo, json.dumps(allergie), partecipa, età, membro),
                     )
-
                 if res != False:
                     membri = fetch_membri()
                     flash("Membro aggiornato con successo.", "ok")
-                    return (
-                        render_template(
-                            "conferma.html",
-                            famiglia=membri,
-                        ),
-                        200,
-                    )
+                    return render_template("conferma.html", famiglia=membri), 200
+
                 membri = fetch_membri()
                 flash("C'è stato un errore imprevisto.", "errore")
-                return (
-                    render_template(
-                        "conferma.html",
-                        famiglia=membri,
-                    ),
-                    500,
-                )
+                return render_template("conferma.html", famiglia=membri), 500
 
             elif request.form.get("nuovo"):
                 nome = request.form.get("nome").lower().strip()
@@ -268,44 +286,21 @@ def conferma() -> Response:
                 if tools.empty_input(nome, cognome):
                     membri = fetch_membri()
                     flash("Assicurati di aver riempito tutti i campi.", "errore")
-                    return (
-                        render_template(
-                            "conferma.html",
-                            famiglia=membri,
-                        ),
-                        400,
-                    )
-                famiglia = session["Famiglia"]
+                    return render_template("conferma.html", famiglia=membri), 400
 
+                famiglia = session["Famiglia"]
                 if tools.create_user(DB, nome, cognome, famiglia):
                     membri = fetch_membri()
                     flash("Membro aggiunto con successo.", "ok")
-                    return (
-                        render_template(
-                            "conferma.html",
-                            famiglia=membri,
-                        ),
-                        200,
-                    )
+                    return render_template("conferma.html", famiglia=membri), 200
+
                 membri = fetch_membri()
                 flash("C'è stato un errore imprevisto.", "errore")
-                return (
-                    render_template(
-                        "conferma.html",
-                        famiglia=membri,
-                    ),
-                    200,
-                )
+                return render_template("conferma.html", famiglia=membri), 200
 
             membri = fetch_membri()
             flash("Questa richiesta non è valida.", "errore")
-            return (
-                render_template(
-                    "conferma.html",
-                    famiglia=membri,
-                ),
-                400,
-            )
+            return render_template("conferma.html", famiglia=membri), 400
         else:
             membri = fetch_membri()
             return render_template("conferma.html", famiglia=membri), 200
@@ -313,54 +308,30 @@ def conferma() -> Response:
         return redirect(url_for("accedi"))
 
 
-@app.route("/contatti")
-def contatti() -> Response:
-    return render_template("contatti.html"), 200
-
-
-@app.route("/programma")
-def programma() -> Response:
-    return render_template("programma.html"), 200
-
-
-@app.route("/location")
-def location() -> Response:
-    return render_template("location.html"), 200
-
-
-@app.route("/lista_nozze")
-def lista_nozze() -> Response:
-    return render_template("lista_nozze.html"), 200
-
-
 @app.route("/accedi", methods=["GET", "POST"])
 def accedi() -> Response:
     if tools.is_logged_in(DB):
         return redirect(url_for("home"))
+
+    if request.method == "POST":
+        if request.form.get("csrf") != session.get("csrf"):
+            flash("La richiesta non contiene il CSRF token.", "errore")
+            return render_template("accedi.html"), 403
+
+        nome = request.form.get("nome").lower().strip()
+        cognome = request.form.get("cognome").lower().strip()
+        if tools.empty_input(nome, cognome):
+            flash("Assicurati di aver riempito tutti i campi.", "errore")
+            return render_template("accedi.html"), 400
+
+        if tools.login_user(DB, nome, cognome):
+            flash("Login eseguito con successo.", "ok")
+            return redirect(url_for("conferma"))
+
+        flash("Questa persona non è sulla lista degli invitati.", "errore")
+        return render_template("accedi.html"), 500
     else:
-        if request.method == "POST":
-            nome = request.form.get("nome").lower().strip()
-            cognome = request.form.get("cognome").lower().strip()
-            if tools.empty_input(nome, cognome):
-                flash("Assicurati di aver riempito tutti i campi.", "errore")
-                return (
-                    render_template(
-                        "accedi.html",
-                    ),
-                    400,
-                )
-            if tools.login_user(DB, nome, cognome):
-                flash("Login eseguito con successo.", "ok")
-                return redirect(url_for("conferma"))
-            flash("Questa persona non è sulla lista degli invitati.", "errore")
-            return (
-                render_template(
-                    "accedi.html",
-                ),
-                500,
-            )
-        else:
-            return render_template("accedi.html"), 200
+        return render_template("accedi.html"), 200
 
 
 @app.route("/logout")

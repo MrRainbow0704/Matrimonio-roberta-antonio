@@ -41,5 +41,6 @@ with tools.DBHandler(**DB) as dbh:
 
 app.jinja_env.globals["DB"] = DB
 app.jinja_env.globals["is_logged_in"] = tools.is_logged_in
+app.jinja_env.globals["generate_csrf_token"] = tools.generate_csrf_token
 
 from . import routes

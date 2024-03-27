@@ -2,6 +2,7 @@ from flask import session, request, Response
 from functools import wraps
 from typing import Callable
 import config
+import secrets
 from .general import get_user_from_name, get_user_from_id
 
 
@@ -12,7 +13,7 @@ def is_logged_in(
 
     Args:
         db (dict[str, str | int]): Dizionario che rappresenta la connessione a un database.
-    
+
     Returns:
         bool: True se l'utente è loggato, altrimenti False.
     """
@@ -59,7 +60,7 @@ def requires_auth(f: Callable[..., Response]) -> Response:
         password combination is valid.
         """
         return username == config.ADMIN_USERNAME and password == config.ADMIN_PASSWD
-    
+
     def authenticate() -> Response:
         """Sends a 401 response that enables basic auth"""
         return Response(
@@ -68,7 +69,7 @@ def requires_auth(f: Callable[..., Response]) -> Response:
             401,
             {"WWW-Authenticate": 'Basic realm="Login Required"'},
         )
-    
+
     @wraps(f)
     def decorated(*args, **kwargs) -> Response:
         auth = request.authorization
@@ -77,3 +78,9 @@ def requires_auth(f: Callable[..., Response]) -> Response:
         return f(*args, **kwargs)
 
     return decorated
+
+
+def generate_csrf_token() -> str:
+    csrf_token = secrets.token_hex(32)
+    session["CSRF_TOKEN"] = csrf_token
+    return f'<input type="hidden" name="csrf" value="{csrf_token}">'

@@ -18,6 +18,7 @@
                     </td>
                     <td>
                         <form method="post">
+                            {{ generate_csrf_token() }}
                             <input type="hidden" name="rimuovi-famiglia" value="1">
                             <input type="hidden" name="famiglia" value="{{ famiglia.Id }}">
                             <button class="btn btn-primary btn-danger" type="submit">Elimina</button>
@@ -32,6 +33,7 @@
     <section class="p-2 flex-grow-0">
         <h3>Aggiungi una famiglia</h3>
         <form method="post">
+            {{ generate_csrf_token() }}
             <input type="hidden" name="aggiungi-famiglia" value="1">
             <div class="mb-3">
                 <label class="form-label" for="nome">Nome</label>
@@ -84,6 +86,7 @@
                     </td>
                     <td>
                         <form method="post">
+                            {{ generate_csrf_token() }}
                             <input type="hidden" name="rimuovi-invitato" value="1">
                             <input type="hidden" name="invitato" value="{{ invitato.Id }}">
                             <button class="btn btn-primary btn-danger" type="submit">Elimina</button>
@@ -98,6 +101,7 @@
     <section class="p-2 flex-grow-0">
         <h3>Aggiungi un invitato</h3>
         <form method="post">
+            {{ generate_csrf_token() }}
             <input type="hidden" name="aggiungi-invitato" value="1">
             <div class="mb-3">
                 <label class="form-label" for="nome">Nome</label>
