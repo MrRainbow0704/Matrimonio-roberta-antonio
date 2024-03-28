@@ -6,7 +6,6 @@
     <section class="p-2 flex-grow-0">
         <h3>Aggiungi una famiglia</h3>
         <form method="post">
-    
             {{ generate_csrf_token() }}
             <input type="hidden" name="aggiungi-famiglia" value="1">
             <div class="mb-3">
@@ -20,7 +19,6 @@
     <section class="p-2 flex-grow-0">
         <h3>Aggiungi un invitato</h3>
         <form method="post">
-    
             {{ generate_csrf_token() }}
             <input type="hidden" name="aggiungi-invitato" value="1">
             <div class="mb-3">
@@ -37,7 +35,6 @@
                     <option value="" selected>Scegli una famiglia...</option>
                     {% for famiglia in famiglie %}
                     <option value="{{ famiglia.Id }}">
-    
                         {{ famiglia.Nome }}
                     </option>
                     {% endfor %}
@@ -104,7 +101,6 @@
                     </td>
                     <td>
                         {% for allergia in invitato.Allergie %}
-
                         {{ allergia }},
                         {% endfor %}
                     </td>
