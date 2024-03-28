@@ -3,9 +3,9 @@ from os import getenv
 from pathlib import Path
 
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
-if not load_dotenv(dotenv_path=ROOT_DIR / ".env"):
+if not load_dotenv():
     print("Impossibile caricare un file .env.")
 # Generale
 HOST = getenv("HOST", "0.0.0.0")
