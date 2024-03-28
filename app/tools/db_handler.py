@@ -114,12 +114,9 @@ class DBHandler:
             self.__cur.execute(query, param)
         except mysql.Error as err:
             try:
-                if not self.__cur.statement is None:
-                    last = self.__cur.statement
-                else:
-                    last = ""
+                last = self.__cur.statement
             except Exception:
-                pass
+                last = ""
             print(f"Error: '{err}'\nQuery: '{last}'")
             return False
 
@@ -127,12 +124,9 @@ class DBHandler:
             res = self.__cur.fetchall()
         except mysql.Error as err:
             try:
-                if not self.__cur.statement is None:
-                    last = self.__cur.statement
-                else:
-                    last = ""
+                last = self.__cur.statement
             except Exception:
-                pass
+                last = ""
             print(f"Error: '{err}'\nQuery: '{last}'")
             res = [None]
 
