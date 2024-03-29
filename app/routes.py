@@ -261,7 +261,7 @@ def conferma() -> Response:
                     for a in allergeni
                 }
                 if tools.empty_input(membro, tipo, partecipa, allergie) or (
-                    tipo == "bambino" and età == None
+                    tipo == "bambino" and età is None
                 ):
                     membri = fetch_membri()
                     flash("Assicurati di aver riempito tutti i campi.", "errore")

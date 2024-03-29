@@ -147,9 +147,9 @@ class DBHandler:
         Returns:
             bool: Se l'operazione è andata a buon fine.
         """
-        if database == None and hasattr(self, "database"):
+        if database is None and hasattr(self, "database"):
             database = self.database
-        elif database == None and not hasattr(self, "database"):
+        elif database is None and not hasattr(self, "database"):
             raise ValueError(
                 "Missing both self.database and the database argument. Only one of them can be missed."
             )
@@ -177,9 +177,9 @@ class DBHandler:
         Returns:
             bool: Se l'operazione è andata a buon fine.
         """
-        if database == None and hasattr(self, "database"):
+        if database is None and hasattr(self, "database"):
             database = self.database
-        elif database == None and not hasattr(self, "database"):
+        elif database is None and not hasattr(self, "database"):
             raise ValueError(
                 "Missing both self.database and the database argument. Only one of them can be missed."
             )

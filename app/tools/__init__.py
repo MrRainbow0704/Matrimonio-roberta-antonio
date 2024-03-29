@@ -15,7 +15,7 @@ from .general import (
 
 
 __all__ = [
-    DBHandler,
+    "DBHandler",
     empty_input,
     create_user,
     delete_user,
