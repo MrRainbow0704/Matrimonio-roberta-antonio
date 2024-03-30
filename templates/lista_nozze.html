@@ -4,5 +4,25 @@
 
 {% block main %}
 <h2 class="fw-semibold">Lista nozze</h2>
+<div class="d-flex flex-wrap main">
+    <section class="p-3">
+        <p>
+            Festeggiare insieme questo giorno tanto atteso sarà per noi il regalo più bello,
+            ma se desiderate contribuire a realizzare un altro nostro sogno, apprezzeremo moltissimo un sostegno al
+            nostro viaggio di nozze.
+        </p>
+        <p>
+            Il nostro IBAN: <strong>IT37W0760115400000080670342</strong>
+            <br>
+            Intestato a: Romualdi Roberta e Antonio Simone.
+        </p>
+    </section>
+    <section class="order-first order-lg-last p-3">
+        <img class="foto-1 rounded img-fluid" src="{{ url_for('static', filename='img/caraibi1.jpg')}}"
+            alt="foto caraibi 1">
+        <img class="foto-1 rounded img-fluid" src="{{ url_for('static', filename='img/caraibi2.jpg')}}"
+            alt="foto caraibi 2">
+    </section>
+</div>
 
 {% endblock main %}
