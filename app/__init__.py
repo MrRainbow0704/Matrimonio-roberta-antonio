@@ -5,7 +5,7 @@ from . import tools
 
 
 app = Flask(__name__, root_path=config.ROOT_DIR)
-app.secret_key = secrets.token_hex(64)
+app.secret_key = config.SECRET_KEY
 
 DB = {
     "host": config.DB_HOST,

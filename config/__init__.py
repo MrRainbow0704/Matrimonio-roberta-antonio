@@ -11,6 +11,7 @@ if not load_dotenv():
 HOST = getenv("HOST", "0.0.0.0")
 PORT = int(getenv("PORT", "80"))
 DEBUG = bool(getenv("DEBUG", "0"))
+SECRET_KEY = getenv("SECRET_KEY", None)
 
 # Admin
 ADMIN_USERNAME = getenv("ADMIN_USERNAME", "admin")

@@ -1,4 +1,4 @@
-from flask import session, request, Response
+from flask import session, request, Response, flash
 from functools import wraps
 from typing import Callable
 import config
@@ -81,6 +81,5 @@ def requires_auth(f: Callable[..., Response]) -> Response:
 
 
 def generate_csrf_token() -> str:
-    csrf_token = secrets.token_hex(32)
-    session["csrf"] = csrf_token
-    return csrf_token
+    session["csrf"] = secrets.token_hex(32)
+    return session["csrf"]
