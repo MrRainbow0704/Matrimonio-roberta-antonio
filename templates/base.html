@@ -1,3 +1,5 @@
+{% set csrf_token = generate_csrf_token() %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -125,7 +127,7 @@
         </div>
         {% else %}
         <div class="m-2 alert alert-info alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i>
+            <i class="bi bi-info-circle-fill"></i>
 
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

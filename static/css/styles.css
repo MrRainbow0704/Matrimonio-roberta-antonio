@@ -53,7 +53,7 @@ footer {
 	aspect-ratio: 1/1;
 }
 
-.foto {
+.foto-1 {
 	width: 100%;
 	aspect-ratio: 2/1;
 }
@@ -83,4 +83,10 @@ h2 {
 iframe {
 	aspect-ratio: 1;
 	width: min(30em,100%);
+}
+
+.center {
+	margin-left: auto;
+	margin-right: auto;
+	width: fit-content;
 }

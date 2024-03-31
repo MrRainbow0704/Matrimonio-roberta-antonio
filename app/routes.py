@@ -95,6 +95,42 @@ def admin() -> Response:
                 ),
                 500,
             )
+        elif request.form.get("aggiungi-famiglia"):
+            nome = request.form.get("nome").lower().strip()
+            if tools.empty_input(nome):
+                invitati, famiglie = fetch_invitati_famiglie()
+                flash("Assicurati di aver riempito tutti i campi.", "errore")
+                return (
+                    render_template(
+                        "admin.html",
+                        invitati=invitati,
+                        famiglie=famiglie,
+                    ),
+                    400,
+                )
+
+            if tools.create_family(DB, nome):
+                invitati, famiglie = fetch_invitati_famiglie()
+                flash("Famiglia creata con successo.", "ok")
+                return (
+                    render_template(
+                        "admin.html",
+                        invitati=invitati,
+                        famiglie=famiglie,
+                    ),
+                    200,
+                )
+
+            invitati, famiglie = fetch_invitati_famiglie()
+            flash("C'è stato un errore imprevisto.", "errore")
+            return (
+                render_template(
+                    "admin.html",
+                    invitati=invitati,
+                    famiglie=famiglie,
+                ),
+                500,
+            )
         elif request.form.get("rimuovi-invitato"):
             invitato = int(request.form.get("invitato"))
             if tools.empty_input(invitato):
@@ -127,42 +163,6 @@ def admin() -> Response:
                 render_template(
                     "admin.html",
                     errore="C'è stato un errore imprevisto.",
-                    invitati=invitati,
-                    famiglie=famiglie,
-                ),
-                500,
-            )
-        elif request.form.get("aggiungi-famiglia"):
-            nome = request.form.get("nome").lower().strip()
-            if tools.empty_input(nome):
-                invitati, famiglie = fetch_invitati_famiglie()
-                flash("Assicurati di aver riempito tutti i campi.", "errore")
-                return (
-                    render_template(
-                        "admin.html",
-                        invitati=invitati,
-                        famiglie=famiglie,
-                    ),
-                    400,
-                )
-
-            if tools.create_family(DB, nome):
-                invitati, famiglie = fetch_invitati_famiglie()
-                flash("Famiglia creata con successo.", "ok")
-                return (
-                    render_template(
-                        "admin.html",
-                        invitati=invitati,
-                        famiglie=famiglie,
-                    ),
-                    200,
-                )
-
-            invitati, famiglie = fetch_invitati_famiglie()
-            flash("C'è stato un errore imprevisto.", "errore")
-            return (
-                render_template(
-                    "admin.html",
                     invitati=invitati,
                     famiglie=famiglie,
                 ),
@@ -279,7 +279,7 @@ def conferma() -> Response:
                 membri = fetch_membri()
                 flash("C'è stato un errore imprevisto.", "errore")
                 return render_template("conferma.html", famiglia=membri), 500
-
+            
             elif request.form.get("nuovo"):
                 nome = request.form.get("nome").lower().strip()
                 cognome = request.form.get("cognome").lower().strip()

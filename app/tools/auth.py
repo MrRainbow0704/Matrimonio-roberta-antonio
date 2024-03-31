@@ -1,6 +1,5 @@
 from flask import session, request, Response
 from functools import wraps
-from markupsafe import Markup
 from typing import Callable
 import config
 import secrets
@@ -84,4 +83,4 @@ def requires_auth(f: Callable[..., Response]) -> Response:
 def generate_csrf_token() -> str:
     csrf_token = secrets.token_hex(32)
     session["csrf"] = csrf_token
-    return Markup(f'<input type="hidden" name="csrf" value="{csrf_token}">')
+    return csrf_token
