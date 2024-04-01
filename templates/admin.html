@@ -5,18 +5,18 @@
 <div class="d-flex justify-content-between align-items-baseline flex-wrap">
     <section class="p-2 flex-grow-1 pb-4">
         <h3>Partecipazioni</h3>
-        {% set n_invitati = 0 %}
-        {% set n_bambini = 0 %}
+        {% set n_invitati = namespace(value=0) %}
+        {% set n_bambini = namespace(value=0) %}
         {% for invitato in invitati %}
             {% if invitato.Partecipa == "Si" %}
-                {% set n_invitati = n_invitati + 1 %}
+                {% set n_invitati.value = n_invitati.value + 1 %}
             {% endif %}
             {% if invitato.Tipo == "bambino" %}
-                {% set n_bambini = n_bambini + 1 %}
+                {% set n_bambini.value = n_bambini.value + 1 %}
             {% endif %}
         {% endfor %}
         <p>
-            Partecipano {{ n_invitati }} su {{ invitati | length }} invitati di cui {{ n_bambini }} bambini.
+            Partecipano {{ n_invitati.value }} su {{ invitati | length }} invitati di cui {{ n_bambini.value }} bambini.
         </p>
 
     </section>
