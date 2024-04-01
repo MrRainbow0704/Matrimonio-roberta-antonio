@@ -6,6 +6,7 @@ from typing import Any, Literal
 class DBHandler:
     __doNotCatch = [ConnectionError]
     __tentativiMax = 3
+    __sessions = []
 
     def __init__(
         self,
@@ -24,18 +25,51 @@ class DBHandler:
             passwd (str, optional): Password con cui accedere. Default None.
             database (str, optional): Nome del database. Default None.
         """
-
         self.host = host
         self.port = port
         self.user = user
         self.passwd = passwd
+        if self in DBHandler.__sessions:
+            self = DBHandler.__sessions.index(self)
+            return
+        DBHandler.__sessions.append(self)
+
+        self.__conn = None
         if database:
-            self.open()
-            self.database = database
-            self.create()
-            self.close()
+            with self:
+                self.database = database
+                self.create()
+
+    def __eq__(self, other: "DBHandler") -> bool:
+        return (
+            self.host == other.host
+            and self.port == other.port
+            and self.user == other.user
+            and self.passwd == other.passwd
+            and getattr(self, "database") == getattr(other, "database")
+        )
+
+    def __enter__(self) -> "DBHandler":
+        return self.open()
+
+    def __exit__(
+        self, exc_type: Exception, exc_value: Any, exc_tb: TracebackType
+    ) -> bool:
+        if exc_type:
+            self.__conn.rollback()
+        else:
+            self.__conn.commit()
+
+        self.close()
+
+        if exc_type in DBHandler.__doNotCatch:
+            return False
+        return True
 
     def connect(self) -> mysql.MySQLConnection:
+        if self.__conn:
+            return self.__conn
+
         tentativi = 0
         while tentativi < DBHandler.__tentativiMax:
             tentativi += 1
@@ -75,23 +109,6 @@ class DBHandler:
         self.connect()
         self.__cur = self.__conn.cursor(dictionary=True)
         return self
-
-    def __enter__(self) -> "DBHandler":
-        return self.open()
-
-    def __exit__(
-        self, exc_type: Exception, exc_value: Any, exc_tb: TracebackType
-    ) -> bool:
-        if exc_type:
-            self.__conn.rollback()
-        else:
-            self.__conn.commit()
-
-        self.close()
-
-        if exc_type in DBHandler.__doNotCatch:
-            return False
-        return True
 
     def query(
         self, query: str, param: tuple[Any] | dict[str, Any] = None

@@ -1,11 +1,13 @@
 from flask import Flask
 import secrets
 import config
+from werkzeug.middleware.profiler import ProfilerMiddleware
 from . import tools
 
 
 app = Flask(__name__, root_path=config.ROOT_DIR)
 app.secret_key = config.SECRET_KEY
+app.wsgi_app = ProfilerMiddleware(app.wsgi_app)
 
 DB = {
     "host": config.DB_HOST,
