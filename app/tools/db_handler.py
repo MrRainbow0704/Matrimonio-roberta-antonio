@@ -46,6 +46,7 @@ class DBHandler:
             and self.port == other.port
             and self.user == other.user
             and self.passwd == other.passwd
+            and hasattr(self, "database") == hasattr(other, "database")
             and getattr(self, "database") == getattr(other, "database")
         )
 
