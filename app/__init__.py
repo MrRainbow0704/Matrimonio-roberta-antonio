@@ -1,5 +1,4 @@
 from flask import Flask
-import secrets
 import config
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from . import tools

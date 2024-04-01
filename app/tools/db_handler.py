@@ -1,4 +1,5 @@
 import mysql.connector as mysql
+from functools import lru_cache
 from types import TracebackType
 from typing import Any, Literal
 
@@ -29,9 +30,10 @@ class DBHandler:
         self.port = port
         self.user = user
         self.passwd = passwd
-        if self in DBHandler.__sessions:
-            self = DBHandler.__sessions.index(self)
-            return
+        clones = [x for x in DBHandler.__sessions if x == self]
+        if clones:
+            self = DBHandler.__sessions.index(clones[0])
+            return None
         DBHandler.__sessions.append(self)
 
         self.__conn = None
@@ -40,15 +42,18 @@ class DBHandler:
                 self.database = database
                 self.create()
 
-    def __eq__(self, other: "DBHandler") -> bool:
-        return (
-            self.host == other.host
-            and self.port == other.port
-            and self.user == other.user
-            and self.passwd == other.passwd
-            and hasattr(self, "database") == hasattr(other, "database")
-            and getattr(self, "database") == getattr(other, "database")
-        )
+    def __repr__(self) -> str:
+        if hasattr(self, "database"):
+            return f"DBHandler(host={self.host}, port={self.port}, user={self.user}, passwd={self.passwd}, database={self.database})"
+        return f"DBHandler(host={self.host}, port={self.port}, user={self.user}, passwd={self.passwd})"
+
+    def __hash__(self) -> int:
+        return hash(self.__key)
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, DBHandler):
+            return self.__key == other.__key
+        return NotImplemented
 
     def __enter__(self) -> "DBHandler":
         return self.open()
@@ -67,8 +72,34 @@ class DBHandler:
             return False
         return True
 
+    @property
+    def __key(self) -> tuple:
+        if hasattr(self, "database"):
+            return (
+                self.host,
+                self.port,
+                self.user,
+                self.passwd,
+                self.database,
+            )
+        return (
+            self.host,
+            self.port,
+            self.user,
+            self.passwd,
+        )
+
+    def close(self) -> None:
+        self.__cur.close()
+        self.__conn.close()
+
+    def open(self) -> "DBHandler":
+        self.connect()
+        self.__cur = self.__conn.cursor(dictionary=True)
+        return self
+
     def connect(self) -> mysql.MySQLConnection:
-        if not self.__conn is None and self.__conn.is_connected():
+        if self.__conn is not None and self.__conn.is_connected():
             return self.__conn
 
         tentativi = 0
@@ -102,20 +133,12 @@ class DBHandler:
         self.__conn = conn
         return self.__conn
 
-    def close(self) -> None:
-        self.__cur.close()
-        self.__conn.close()
-
-    def open(self) -> "DBHandler":
-        self.connect()
-        self.__cur = self.__conn.cursor(dictionary=True)
-        return self
-
     def query(
         self, query: str, param: tuple[Any] | dict[str, Any] = None
     ) -> list[dict[str, str | None]] | Literal[False]:
         """Manda una query SQL al database a cui si è connessi.
         Usa `%s` o `%(var)s` se `param` è un dizionario con una chiave "val".
+        Questa funzione fa uso di una cache.
 
         Args:
             query (str): Query da eseguire.
@@ -124,31 +147,39 @@ class DBHandler:
         Returns:
             list[dict[str, str | None]] | None: Il valore restituito dalla query
         """
+        @lru_cache(maxsize=20)
+        def _query(
+            query: str, param: tuple[Any] | dict[str, Any] = None
+        ) -> list[dict[str, str | None]] | Literal[False]:
+            if param is None:
+                param = ()
 
-        if param is None:
-            param = ()
-
-        try:
-            self.__cur.execute(query, param)
-        except mysql.Error as err:
             try:
-                last = self.__cur.statement
-            except Exception:
-                last = ""
-            print(f"Error: '{err}'\nQuery: '{last}'")
-            return False
+                self.__cur.execute(query, param)
+            except mysql.Error as err:
+                try:
+                    last = self.__cur.statement
+                except Exception:
+                    last = "None"
+                print(f"Error: '{err}'\nQuery: '{last}'")
+                return False
 
-        try:
-            res = self.__cur.fetchall()
-        except mysql.Error as err:
             try:
-                last = self.__cur.statement
-            except Exception:
-                last = ""
-            print(f"Error: '{err}'\nQuery: '{last}'")
-            res = [None]
+                res = self.__cur.fetchall()
+            except mysql.Error as err:
+                try:
+                    last = self.__cur.statement
+                except Exception:
+                    last = "None"
+                print(f"Error: '{err}'\nQuery: '{last}'")
+                res = [None]
 
-        self.__cur.reset()
+            self.__cur.reset()
+            return res
+
+        res = _query(query, param)
+        if any(kword in query for kword in ["UPDATE", "INSERT", "DELETE"]):
+            _query.cache_clear()
         return res
 
     def create(self, database: str = None) -> bool:
