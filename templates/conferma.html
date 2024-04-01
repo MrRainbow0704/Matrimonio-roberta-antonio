@@ -10,9 +10,9 @@
     <section class="p-2 m-2 flex-grow-1 pb-4" id="membro-{{ membro.Id }}">
         <h3>
 
-            {{ membro.Nome.capitalize() }}
+            {{ membro.Nome | capitalize }}
 
-            {{ membro.Cognome.capitalize() }}
+            {{ membro.Cognome | capitalize }}
         </h3>
         <form method="post" class="center">
             <input type="hidden" name="csrf" value="{{ csrf_token }}">

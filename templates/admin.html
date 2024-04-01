@@ -4,6 +4,24 @@
 <h2 class="fw-semibold">Admin page</h2>
 <div class="d-flex justify-content-between align-items-baseline flex-wrap">
     <section class="p-2 flex-grow-1 pb-4">
+        <h3>Partecipazioni</h3>
+        {% set n_invitati = 0 %}
+        {% set n_bambini = 0 %}
+        {% for invitato in invitati %}
+            {% if invitato.Partecipa == "Si" %}
+                {% set n_invitati = n_invitati + 1 %}
+            {% endif %}
+            {% if invitato.Tipo == "bambino" %}
+                {% set n_bambini = n_bambini + 1 %}
+            {% endif %}
+        {% endfor %}
+        <p>
+            Partecipano {{ n_invitati }} su {{ invitati | length }} invitati di cui {{ n_bambini }} bambini.
+        </p>
+
+    </section>
+
+    <section class="p-2 flex-grow-1 pb-4">
         <h3>Aggiungi una famiglia</h3>
         <form method="post" class="center">
             <input type="hidden" name="csrf" value="{{ csrf_token }}">
@@ -91,11 +109,11 @@
                 <tr>
                     <td>
 
-                        {{ invitato.Nome }}
+                        {{ invitato.Nome | capitalize }}
                     </td>
                     <td>
 
-                        {{ invitato.Cognome }}
+                        {{ invitato.Cognome | capitalize }}
                     </td>
                     <td>
 
@@ -106,10 +124,8 @@
                         {{ invitato.Partecipa }}
                     </td>
                     <td>
-                        {% for allergia in invitato.Allergie %}
 
-                        {{ allergia }},
-                        {% endfor %}
+                        {{ invitato.Allergie | join(", ") }}
                     </td>
                     <td>
 

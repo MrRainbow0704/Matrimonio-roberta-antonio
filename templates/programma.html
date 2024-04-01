@@ -4,5 +4,21 @@
 
 {% block main %}
 <h2 class="fw-semibold">Programma</h2>
-
+<div class="d-flex justify-content-evenly align-items-baseline flex-wrap">
+    <section class="p-2 m-2 flex-grow-1 d-flex flex-column align-items-center pb-4 text-center">
+        <h3 class="fs-4 fw-medium">
+            <time datetime="2024-7-7">Domenica 07 Luglio 2024</time>
+        </h3>
+        <p>
+            Cerimonia alle ore <time datetime="11:00">11.00</time>
+            Presso la <a href="{{ url_for('location') }}#chiesa">chiesa "Collegiata di San Michele Arcangelo"</a>.
+        </p>
+        <p>
+            In seguitow alla cerimonia religiosa saremo lieti di festeggiare insieme presso il
+            <a href="{{ url_for('location') }}#ristorante">ristorante "Ferretti Village Parco Archea"</a>.
+            <br>
+            Dopo il taglio della torta la festa continuerà in piscina con balli e musica.
+        </p>
+    </section>
+</div>
 {% endblock main %}
