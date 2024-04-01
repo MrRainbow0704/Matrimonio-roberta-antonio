@@ -67,7 +67,7 @@ class DBHandler:
         return True
 
     def connect(self) -> mysql.MySQLConnection:
-        if self.__conn.is_connected():
+        if not self.__conn is None and self.__conn.is_connected():
             return self.__conn
 
         tentativi = 0
