@@ -78,7 +78,7 @@
                         {{ famiglia.Nome }}
                     </td>
                     <td>
-                        <form method="delete">
+                        <form method="post">
                             <input type="hidden" name="csrf" value="{{ csrf_token }}">
                             <input type="hidden" name="rimuovi-famiglia" value="1">
                             <input type="hidden" name="famiglia" value="{{ famiglia.Id }}">
@@ -136,10 +136,49 @@
                         {{ invitato.Età }}
                     </td>
                     <td>
-                        <form method="delete">
+                        <form method="post">
                             <input type="hidden" name="csrf" value="{{ csrf_token }}">
                             <input type="hidden" name="rimuovi-invitato" value="1">
                             <input type="hidden" name="invitato" value="{{ invitato.Id }}">
+                            <button class="btn btn-primary btn-danger" type="submit">Elimina</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="p-2 flex-grow-1 pb-4 table-responsive">
+        <h3>Foto</h3>
+        <table class="table table-hover table-bordered">
+            <thead>
+                <th>Foto</th>
+                <th>Caricato da</th>
+                <th>Dimensioni</th>
+                <th>Percorso</th>
+                <th>Elimina</th>
+            </thead>
+            <tbody>
+                {% for f in foto %}
+                <tr>
+                    <td>
+                        <img src="{{ f.url }}" alt="{{ f.url }}" style="max-width: 50px; max-height: 50px">
+                    </td>
+                    <td> 
+                        {{ f.user.nome }} della famiglia {{ f.user.famiglia }}
+                    </td>
+                    <td> 
+                        {{ f.size }} KB
+                    </td>
+                    <td>
+                        <a href="{{ f.url }}" target="_blank">{{ f.url }}</a>
+                    </td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                            <input type="hidden" name="rimuovi-foto" value="1">
+                            <input type="hidden" name="foto" value="{{ f.url.rsplit('/')[-1] }}">
                             <button class="btn btn-primary btn-danger" type="submit">Elimina</button>
                         </form>
                     </td>

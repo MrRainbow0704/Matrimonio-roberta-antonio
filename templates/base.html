@@ -83,6 +83,12 @@
                             Lista nozze
                         </a>
                     </li>
+                    <li class="nav-item {% block nav_galleria %}{% endblock nav_galleria %}">
+                        <a class="nav-link mx-2 mx-lg-0" href="{{ url_for('galleria') }}">
+                            <i class="bi bi-image-fill"></i>
+                            Galleria
+                        </a>
+                    </li>
                     {% if is_logged_in(DB) %}
                     <li class="nav-item {% block nav_conferma %}{% endblock nav_conferma %}">
                         <a class="nav-link mx-2 mx-lg-0" href="{{ url_for('conferma') }}">

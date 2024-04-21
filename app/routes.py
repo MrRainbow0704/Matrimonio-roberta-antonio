@@ -1,5 +1,17 @@
-from flask import render_template, redirect, url_for, session, request, Response, flash
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    session,
+    request,
+    Response,
+    flash,
+    send_from_directory,
+)
 import json
+import os
+import secrets
+from werkzeug.utils import secure_filename
 from . import tools, app, DB
 
 
@@ -31,29 +43,55 @@ def lista_nozze() -> Response:
 @app.route("/admin", methods=["GET", "POST"])
 @tools.requires_auth
 def admin() -> Response:
-    def fetch_invitati_famiglie() -> tuple[list[dict[str, int | str]]]:
+    def fetch_invitati() -> list[dict[str, int | str]]:
         with tools.DBHandler(**DB) as dbh:
             invitati = dbh.query("SELECT * FROM Invitati;")
-            famiglie = dbh.query("SELECT * FROM Famiglie;")
 
-            # Fai apparire nella lista `i["Allergie"]` solo le allergie presenti.
-            for i in invitati:
-                i["Allergie"] = [
-                    k for k, v in json.loads(i["Allergie"]).items() if v == 1
-                ]
-                i["Partecipa"] = "Si" if i["Partecipa"] else "No"
-                i["Famiglia"] = tools.get_family_from_id(DB, i["Famiglia"])["Nome"]
-        return (invitati, famiglie)
+        # Fai apparire nella lista `i["Allergie"]` solo le allergie presenti.
+        for i in invitati:
+            i["Allergie"] = [k for k, v in json.loads(i["Allergie"]).items() if v == 1]
+            i["Partecipa"] = "Si" if i["Partecipa"] else "No"
+            i["Famiglia"] = tools.get_family_from_id(DB, i["Famiglia"])["Nome"]
+        return invitati
+
+    def fetch_famiglie() -> list[dict[str, int | str]]:
+        with tools.DBHandler(**DB) as dbh:
+            famiglie = dbh.query("SELECT * FROM Famiglie;")
+        return famiglie
+
+    def allowed_file(file: str) -> bool:
+        estensioni = (".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".png")
+        return file.lower().endswith(estensioni)
+
+    def fetch_foto() -> list[str]:
+        foto = []
+        for file in os.listdir(app.config["UPLOAD_FOLDER"]):
+            if allowed_file(file):
+                url = url_for("uploads", filename=file)
+                owner_id = file.split("-")[0]
+                owner = tools.get_user_from_id(DB, owner_id)
+                famiglia = tools.get_family_from_id(DB, owner["Famiglia"])
+                user = {
+                    "nome": f'{owner["Nome"].capitalize()} {owner["Cognome"].capitalize()}',
+                    "famiglia": famiglia["Nome"],
+                }
+                file_size = os.path.getsize(os.path.join(app.config["UPLOAD_FOLDER"], file))
+                size = round(file_size / 1024, 2)
+                foto.append({"url": url, "user": user, "size": size})
+        return foto
 
     if request.method == "POST":
         if request.form.get("csrf") != session.get("csrf"):
-            invitati, famiglie = fetch_invitati_famiglie()
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
             flash("La richiesta non contiene il CSRF token.", "errore")
             return (
                 render_template(
                     "admin.html",
                     invitati=invitati,
                     famiglie=famiglie,
+                    foto=foto,
                 ),
                 403,
             )
@@ -62,158 +100,243 @@ def admin() -> Response:
             cognome = request.form.get("cognome").lower().strip()
             famiglia = request.form.get("famiglia").lower().strip()
             if tools.empty_input(nome, cognome, famiglia):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     400,
                 )
 
             if tools.create_user(DB, nome, cognome, famiglia):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Utente creato con successo.", "ok")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     200,
                 )
 
-            invitati, famiglie = fetch_invitati_famiglie()
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
                 render_template(
                     "admin.html",
                     invitati=invitati,
                     famiglie=famiglie,
+                    foto=foto,
                 ),
                 500,
             )
         elif request.form.get("aggiungi-famiglia"):
             nome = request.form.get("nome").lower().strip()
             if tools.empty_input(nome):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        oto=foto,
                     ),
                     400,
                 )
 
             if tools.create_family(DB, nome):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Famiglia creata con successo.", "ok")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     200,
                 )
 
-            invitati, famiglie = fetch_invitati_famiglie()
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
                 render_template(
                     "admin.html",
                     invitati=invitati,
                     famiglie=famiglie,
+                    foto=foto,
                 ),
                 500,
             )
         elif request.form.get("rimuovi-invitato"):
             invitato = int(request.form.get("invitato"))
             if tools.empty_input(invitato):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     400,
                 )
 
             if tools.delete_user(DB, invitato):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Utente rimosso con successo.", "ok")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     200,
                 )
 
-            invitati, famiglie = fetch_invitati_famiglie()
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
                 render_template(
                     "admin.html",
-                    errore="C'è stato un errore imprevisto.",
                     invitati=invitati,
                     famiglie=famiglie,
+                    foto=foto,
                 ),
                 500,
             )
         elif request.form.get("rimuovi-famiglia"):
             famiglia = int(request.form.get("famiglia"))
             if tools.empty_input(famiglia):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Assicurati di aver riempito tutti i campi.", "errore")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     400,
                 )
 
             if tools.delete_family(DB, famiglia):
-                invitati, famiglie = fetch_invitati_famiglie()
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
                 flash("Famiglia rimossa con successo.", "ok")
                 return (
                     render_template(
                         "admin.html",
                         invitati=invitati,
                         famiglie=famiglie,
+                        foto=foto,
                     ),
                     200,
                 )
 
-            invitati, famiglie = fetch_invitati_famiglie()
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
             flash("C'è stato un errore imprevisto.", "errore")
             return (
                 render_template(
                     "admin.html",
                     invitati=invitati,
                     famiglie=famiglie,
+                    foto=foto,
                 ),
                 500,
             )
+        elif request.form.get("rimuovi-foto"):
+            foto = secure_filename(request.form.get("foto"))
+            if not allowed_file(foto):
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
+                flash("Something went wrong", "errore")
+                return (
+                    render_template(
+                        "admin.html", invitati=invitati, famiglie=famiglie, foto=foto
+                    ),
+                    400,
+                )
+
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], foto)
+            if not os.path.isfile(filepath):
+                invitati = fetch_invitati()
+                famiglie = fetch_famiglie()
+                foto = fetch_foto()
+                flash("Questa foto non esiste.", "errore")
+                return (
+                    render_template(
+                        "admin.html", invitati=invitati, famiglie=famiglie, foto=foto
+                    ),
+                    400,
+                )
+
+            os.remove(filepath)
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
+            flash("Foto eliminata con successo.", "ok")
+            return (
+                render_template(
+                    "admin.html", invitati=invitati, famiglie=famiglie, foto=foto
+                ),
+                200,
+            )
+
         else:
-            invitati, famiglie = fetch_invitati_famiglie()
+            invitati = fetch_invitati()
+            famiglie = fetch_famiglie()
+            foto = fetch_foto()
             flash("Questa richiesta non è valida.", "errore")
             return (
-                render_template("admin.html", invitati=invitati, famiglie=famiglie),
+                render_template(
+                    "admin.html", invitati=invitati, famiglie=famiglie, foto=foto
+                ),
                 400,
             )
     else:
-        invitati, famiglie = fetch_invitati_famiglie()
-        return render_template("admin.html", invitati=invitati, famiglie=famiglie), 200
+        invitati = fetch_invitati()
+        famiglie = fetch_famiglie()
+        foto = fetch_foto()
+        return (
+            render_template(
+                "admin.html", invitati=invitati, famiglie=famiglie, foto=foto
+            ),
+            200,
+        )
 
 
 @app.route("/conferma", methods=["GET", "POST"])
@@ -279,7 +402,7 @@ def conferma() -> Response:
                 membri = fetch_membri()
                 flash("C'è stato un errore imprevisto.", "errore")
                 return render_template("conferma.html", famiglia=membri), 500
-            
+
             elif request.form.get("nuovo"):
                 nome = request.form.get("nome").lower().strip()
                 cognome = request.form.get("cognome").lower().strip()
@@ -305,6 +428,7 @@ def conferma() -> Response:
             membri = fetch_membri()
             return render_template("conferma.html", famiglia=membri), 200
     else:
+        flash("Devi eseguire il login per vedere questa pagina.", "errore")
         return redirect(url_for("accedi"))
 
 
@@ -329,9 +453,55 @@ def accedi() -> Response:
             return redirect(url_for("conferma"))
 
         flash("Questa persona non è sulla lista degli invitati.", "errore")
-        return render_template("accedi.html"), 500
+        return render_template("accedi.html"), 403
     else:
         return render_template("accedi.html"), 200
+
+
+@app.route("/galleria", methods=["GET", "POST"])
+def galleria() -> Response:
+    def allowed_file(file: str) -> bool:
+        estensioni = (".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".png")
+        return file.lower().endswith(estensioni)
+
+    def fetch_foto() -> list[str]:
+        foto = []
+        for file in os.listdir(app.config["UPLOAD_FOLDER"]):
+            if allowed_file(file):
+                foto.append(url_for("uploads", filename=file))
+        return foto
+
+    if request.method == "POST":
+        if not tools.is_logged_in(DB):
+            flash("Devi aver eseguito il login per caricare delle immagini.", "errore")
+            return redirect(url_for("accedi"))
+
+        if request.form.get("csrf") != session.get("csrf"):
+            flash("La richiesta non contiene il CSRF token.", "errore")
+            return render_template("accedi.html"), 403
+
+        if "file" not in request.files or request.files["file"].filename == "":
+            flash("Non hai selezionato un'immagine.", "errore")
+            return redirect(url_for("galleria"))
+
+        if not allowed_file(request.files["file"].filename):
+            flash("Questa estensione non è supportata.", "errore")
+            return redirect(url_for("galleria"))
+
+        file = request.files["file"]
+        ext = request.files["file"].filename.rsplit(".")[-1]
+        filename = f'{session["Id"]}-{secrets.token_hex(8)}.{ext}'
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        flash("Immagine caricata con successo.", "ok")
+        return render_template("galleria.html", foto=fetch_foto()), 200
+
+    return render_template("galleria.html", foto=fetch_foto()), 200
+
+
+@app.route("/uploads/<string:filename>")
+def uploads(filename: str):
+    filename = secure_filename(filename)
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 
 @app.route("/logout")

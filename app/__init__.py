@@ -5,6 +5,8 @@ from . import tools
 
 app = Flask(__name__, root_path=config.ROOT_DIR)
 app.secret_key = config.SECRET_KEY
+app.config["UPLOAD_FOLDER"] = config.UPLOAD_DIR
+app.config["MAX_CONTENT_LENGTH"] = config.MAX_UPLOAD_SIZE
 
 DB = {
     "host": config.DB_HOST,

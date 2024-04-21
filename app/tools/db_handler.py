@@ -92,6 +92,7 @@ class DBHandler:
     def close(self) -> None:
         self.__cur.close()
         self.__conn.close()
+        self.__conn = None
 
     def open(self) -> "DBHandler":
         self.connect()
