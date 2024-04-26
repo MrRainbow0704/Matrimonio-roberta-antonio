@@ -1,36 +1,29 @@
-from flask import session, request, Response, flash
-from functools import wraps
-from typing import Callable
 import config
 import secrets
+from flask import session, request, Response
+from functools import wraps
+from typing import Callable
 from .general import get_user_from_name, get_user_from_id
 
 
-def is_logged_in(
-    db: dict[str, str | int],
-) -> bool:
+def is_logged_in() -> bool:
     """Controlla se l'utente è loggato o no.
-
-    Args:
-        db (dict[str, str | int]): Dizionario che rappresenta la connessione a un database.
 
     Returns:
         bool: True se l'utente è loggato, altrimenti False.
     """
     if "Id" in session:
-        return get_user_from_id(db, session["Id"]) != False
+        return get_user_from_id(session["Id"]) != False
     return False
 
 
 def login_user(
-    db: dict[str, str | int],
     nome: str,
     cognome: str,
 ) -> bool:
     """Esegue il login di un utente.
 
     Args:
-        db (dict[str, str | int]): Dizionario che rappresenta la connessione a un database.
         nome (str): Nome dell'utente.
         cognome (str): Password dell'utente (in chiaro).
 
@@ -39,17 +32,17 @@ def login_user(
     """
 
     # Ottieni il profilo dell'utente attraverso il nume
-    getNameResult = get_user_from_name(db, nome, cognome)
+    getNameResult = get_user_from_name( nome, cognome)
 
     # Controlla che l'utente esista
     if not getNameResult:
         return False
 
     # Se tutto va a buon fine, inizia una muova sessione
-    session["Id"] = getNameResult["Id"]
-    session["Nome"] = getNameResult["Nome"]
-    session["Cognome"] = getNameResult["Cognome"]
-    session["Famiglia"] = getNameResult["Famiglia"]
+    session["Id"] = getNameResult.id
+    session["Nome"] = getNameResult.nome
+    session["Cognome"] = getNameResult.cognome
+    session["Famiglia"] = getNameResult.famiglia
 
     return True
 

@@ -1,5 +1,8 @@
-from typing import Any, Literal
-from .db_handler import DBHandler
+from typing import Any, Literal, Sequence
+from sqlalchemy import select, delete
+from sqlalchemy.exc import MultipleResultsFound, SQLAlchemyError
+from .orm import Invitato, Famiglia, session
+
 
 def empty_input(*args: Any) -> bool:
     """Controlla che nessuno degli argomenti sia nullo o vuoto.
@@ -18,237 +21,206 @@ def empty_input(*args: Any) -> bool:
 
 
 def get_user_from_name(
-    db: dict[str, str | int],
     nome: str,
     cognome: str,
-) -> dict[str, str | int] | Literal[False]:
+) -> Invitato | Literal[False]:
     """Ottiene i dati di un utente inserendo nome e cognome.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
         nome (str): Il nome dell'utente.
         cognome (str): Il cognome dell'utente.
 
     Returns:
-        dict[str, str | int] | Literal[False]: Un dizionario che rappresenta la riga dell'utente.
-            False se la query fallisce.
+        Invitato | Literal[False]: La riga dell'utente. False se la query fallisce.
     """
 
-    with DBHandler(**db) as conn:
-        res = conn.query(
-            "SELECT * FROM Invitati WHERE Nome=%s AND Cognome=%s;",
-            (
-                nome,
-                cognome,
-            ),
+    with session.begin() as s:
+        stmt = select(Invitato).where(
+            Invitato.nome == nome, Invitato.cognome == cognome
         )
-    if res:
-        return res[0]
-    return False
+        try:
+            res = s.scalars(stmt).one()
+        except (MultipleResultsFound, SQLAlchemyError):
+            res = False
+    return res
 
 
-def get_user_from_id(
-    db: dict[str, str | int], id_: int
-) -> dict[str, str | int] | Literal[False]:
+def get_user_from_id(id_: int) -> Invitato | Literal[False]:
     """Ottiene i dati di un utente inserendo nome e cognome.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
         id_ (int): L'id dell'utente.
 
     Returns:
-        dict[str, str | int] | Literal[False]: Un dizionario che rappresenta la riga dell'utente.
-            False se la query fallisce.
+        Invitato | Literal[False]: La riga dell'utente. False se la query fallisce.
     """
 
-    with DBHandler(**db) as conn:
-        res = conn.query(
-            "SELECT * FROM Invitati WHERE Id=%s;",
-            (id_,),
-        )
-    if res:
-        return res[0]
-    return False
+    with session.begin() as s:
+        stmt = select(Invitato).where(Invitato.id == id_)
+        try:
+            res = s.scalars(stmt).one()
+        except (MultipleResultsFound, SQLAlchemyError):
+            res = False
+    return res
 
 
 def get_family_from_name(
-    db: dict[str, str | int],
     nome: str,
-) -> dict[str, str | int] | Literal[False]:
+) -> Famiglia | Literal[False]:
     """Ottiene i dati di una famiglia inserendone il nome.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
         nome (str): Il nome della famiglia.
 
     Returns:
-        dict[str, str | int] | Literal[False]: Un dizionario che rappresenta la riga della famiglia.
-            False se la query fallisce.
+        Famiglia | Literal[False]: La riga della famiglia. False se la query fallisce.
     """
 
-    with DBHandler(**db) as conn:
-        res = conn.query(
-            "SELECT * FROM Famiglie WHERE Nome=%s;",
-            (nome,),
-        )
-
-    if res:
-        return res[0]
-    return False
+    with session.begin() as s:
+        stmt = select(Famiglia).where(Famiglia.nome == nome)
+        try:
+            res = s.scalars(stmt).one()
+        except (MultipleResultsFound, SQLAlchemyError):
+            res = False
+    return res
 
 
 def get_family_from_id(
-    db: dict[str, str | int],
     id_: int,
-) -> dict[str, str | int] | Literal[False]:
+) -> Famiglia | Literal[False]:
     """Ottiene i dati di una famiglia inserendone il nome.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
         id_ (int): L'id della famiglia.
 
     Returns:
-        dict[str, str | int] | Literal[False]: Un dizionario che rappresenta la riga della famiglia.
-            False se la query fallisce.
+        Famiglia | Literal[False]: La riga della famiglia. False se la query fallisce.
     """
 
-    with DBHandler(**db) as conn:
-        res = conn.query(
-            "SELECT * FROM Famiglie WHERE Id=%s;",
-            (id_,),
-        )
-
-    if res:
-        return res[0]
-    return False
+    with session.begin() as s:
+        stmt = select(Famiglia).where(Famiglia.id == id_)
+        try:
+            res = s.scalars(stmt).one()
+        except (MultipleResultsFound, SQLAlchemyError):
+            res = False
+    return res
 
 
-def create_user(
-    db: dict[str, str | int], nome: str, cognome: str, famiglia: str
-) -> bool:
+def create_user(nome: str, cognome: str, famiglia: int) -> bool:
     """Crea un utente nel database.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
         nome (str): Il nome dell'utente.
         cognome (str): Il cognome dell'utente.
+        famiglia (int): L'id della famiglia.
 
     Returns:
         bool: Se la funzione ha funzionato correttamente.
     """
-    if get_user_from_name(db, nome, cognome):
+    if get_user_from_name(nome, cognome):
         return False
 
-    f = get_family_from_id(db, famiglia)
+    f = get_family_from_id(famiglia)
     if not f:
         return False
 
-    with DBHandler(**db) as dbh:
-        res = dbh.query(
-            "INSERT INTO Invitati (Nome, Cognome, Famiglia) VALUES (%s, %s, %s);",
-            (nome, cognome, f["Id"]),
-        )
+    with session.begin() as s:
+        utente = Invitato(nome=nome, cognome=cognome, famiglia=f.id)
+        s.add(utente)
 
-    user = get_user_from_name(db, nome, cognome)
+    user = get_user_from_name(nome, cognome)
     if not user:
         return False
 
-    if res != False:
+    if utente:
         return True
     return False
 
 
-def delete_user(db: dict[str, str | int], id_: int) -> bool:
+def delete_user(id_: int) -> bool:
     """Rimuove un utente dal database.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
-        nome (str): Il nome dell'utente.
-        cognome (str): Il cognome dell'utente.
+        id_ (int): L'ID dell'utente.
 
     Returns:
         bool: Se la funzione ha funzionato correttamente.
     """
 
-    user = get_user_from_id(db, id_)
+    user = get_user_from_id(id_)
     if not user:
         return False
 
-    famiglia = get_family_from_id(db, user["Famiglia"])
+    famiglia = get_family_from_id(user.famiglia)
     if not famiglia:
         return False
 
-    with DBHandler(**db) as dbh:
-        res = dbh.query("DELETE FROM Invitati WHERE Id=%s;", (id_,))
+    with session.begin() as s:
+        stmt = delete(Invitato).where(Invitato.id == id_)
+        s.execute(stmt)
 
-    if res != False:
-        return True
-    return False
+    return True
 
 
-def create_family(db: dict[str, str | int], nome: str) -> bool:
+def create_family(nome: str) -> bool:
     """Crea una famiglia nel database.
 
     Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
         nome (str): Il nome della famiglia.
 
     Returns:
         bool: Se l'operazione è andata a buon fine.
     """
 
-    if get_family_from_name(db, nome):
+    if get_family_from_name(nome):
         return False
 
-    with DBHandler(**db) as dbh:
-        res = dbh.query("INSERT INTO Famiglie (Nome) VALUES (%s);", (nome,))
+    with session.begin() as s:
+        famiglia = Famiglia(nome=nome)
+        s.add(famiglia)
 
-    if res != False:
+    if famiglia != False:
         return True
     else:
         return False
 
 
-def delete_family(db: dict[str, str | int], id_: int) -> bool:
+def delete_family(id_: int) -> bool:
     """Rimuove una famiglia dal database.
 
-    Args:
-        db (dict[str, str | int]): Un dizionario che rappresenta la connessione a un database.
+    Args
         id_ (int): L'id della famiglia.
 
     Returns:
         bool: Se l'operazione è andata a buon fine.
     """
 
-    family = get_family_from_id(db, id_)
+    family = get_family_from_id(id_)
     if not family:
         return False
 
-    with DBHandler(**db) as dbh:
-        res = dbh.query("DELETE FROM Famiglie WHERE Id=%s;", (id_,))
-        res1 = dbh.query("DELETE FROM Invitati WHERE Famiglia=%s;", (family["Id"],))
+    with session.begin() as s:
+        stmt1 = delete(Famiglia).where(Famiglia.id == id_)
+        stmt2 = delete(Invitato).where(Invitato.famiglia == family.id)
+        s.execute(stmt1)
+        s.execute(stmt2)
 
-    if res != False and res1 != False:
-        return True
-    else:
-        return False
+    return True
 
 
-def get_family_members(
-    db: dict[str, str | int], id_: int
-) -> list[dict[str, str | int]] | Literal[False]:
+def get_family_members(id_: int) -> Sequence[Invitato] | Literal[False]:
     """Ottieni tutti i famigliari inclusi in una famiglia.
 
     Args:
-        db (dict[str, str  |  int]): Un dizionario che rappresenta la connessione a un database.
         id_ (int): Id della famiglia.
 
     Returns:
-        list[dict[str, str|int]] | Literal[False]: Lista di invitati, False in caso di errore.
+        Sequence[Invitato] | Literal[False]: Sequenza di invitati, False in caso di errore.
     """
 
-    with DBHandler(**db) as dbh:
-        res = dbh.query("SELECT * FROM Invitati WHERE Famiglia=%s;", (id_,))
+    with session.begin() as s:
+        stmt = select(Invitato).where(Invitato.famiglia == id_)
+        res = s.scalars(stmt).all()
 
     if res:
         return res

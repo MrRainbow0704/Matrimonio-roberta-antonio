@@ -8,11 +8,12 @@ from flask import (
     flash,
     send_from_directory,
 )
+from sqlalchemy import select, update
 import json
 import os
 import secrets
 from werkzeug.utils import secure_filename
-from . import tools, app, DB
+from . import tools, app
 
 
 @app.route("/")
@@ -44,19 +45,21 @@ def lista_nozze() -> Response:
 @tools.requires_auth
 def admin() -> Response:
     def fetch_invitati() -> list[dict[str, int | str]]:
-        with tools.DBHandler(**DB) as dbh:
-            invitati = dbh.query("SELECT * FROM Invitati;")
+        with tools.session.begin() as s:
+            stmt = select(tools.Invitato)
+            invitati = s.scalars(stmt).all()
 
         # Fai apparire nella lista `i["Allergie"]` solo le allergie presenti.
         for i in invitati:
-            i["Allergie"] = [k for k, v in json.loads(i["Allergie"]).items() if v == 1]
-            i["Partecipa"] = "Si" if i["Partecipa"] else "No"
-            i["Famiglia"] = tools.get_family_from_id(DB, i["Famiglia"])["Nome"]
+            i.allergie = [k for k, v in json.loads(i.allergie).items() if v == 1]
+            i.partecipa = "Si" if i.partecipa else "No"
+            i.famiglia = tools.get_family_from_id(i.famiglia).nome
         return invitati
 
     def fetch_famiglie() -> list[dict[str, int | str]]:
-        with tools.DBHandler(**DB) as dbh:
-            famiglie = dbh.query("SELECT * FROM Famiglie;")
+        with tools.session.begin() as s:
+            stmt = select(tools.Famiglia)
+            famiglie = s.scalars(stmt).all()
         return famiglie
 
     def allowed_file(file: str) -> bool:
@@ -69,11 +72,11 @@ def admin() -> Response:
             if allowed_file(file):
                 url = url_for("uploads", filename=file)
                 owner_id = file.split("-")[0]
-                owner = tools.get_user_from_id(DB, owner_id)
-                famiglia = tools.get_family_from_id(DB, owner["Famiglia"])
+                owner = tools.get_user_from_id(owner_id)
+                famiglia = tools.get_family_from_id(owner.famiglia)
                 user = {
-                    "nome": f'{owner["Nome"].capitalize()} {owner["Cognome"].capitalize()}',
-                    "famiglia": famiglia["Nome"],
+                    "nome": f'{owner.nome.capitalize()} {owner.cognome.capitalize()}',
+                    "famiglia": famiglia.nome,
                 }
                 file_size = os.path.getsize(os.path.join(app.config["UPLOAD_FOLDER"], file))
                 size = round(file_size / 1024, 2)
@@ -114,7 +117,7 @@ def admin() -> Response:
                     400,
                 )
 
-            if tools.create_user(DB, nome, cognome, famiglia):
+            if tools.create_user(nome, cognome, famiglia):
                 invitati = fetch_invitati()
                 famiglie = fetch_famiglie()
                 foto = fetch_foto()
@@ -159,7 +162,7 @@ def admin() -> Response:
                     400,
                 )
 
-            if tools.create_family(DB, nome):
+            if tools.create_family(nome):
                 invitati = fetch_invitati()
                 famiglie = fetch_famiglie()
                 foto = fetch_foto()
@@ -204,7 +207,7 @@ def admin() -> Response:
                     400,
                 )
 
-            if tools.delete_user(DB, invitato):
+            if tools.delete_user(invitato):
                 invitati = fetch_invitati()
                 famiglie = fetch_famiglie()
                 foto = fetch_foto()
@@ -249,7 +252,7 @@ def admin() -> Response:
                     400,
                 )
 
-            if tools.delete_family(DB, famiglia):
+            if tools.delete_family(famiglia):
                 invitati = fetch_invitati()
                 famiglie = fetch_famiglie()
                 foto = fetch_foto()
@@ -341,13 +344,13 @@ def admin() -> Response:
 
 @app.route("/conferma", methods=["GET", "POST"])
 def conferma() -> Response:
-    def fetch_membri() -> list[dict[str, int | str]]:
-        membri = tools.get_family_members(DB, session["Famiglia"])
+    def fetch_membri() -> list[tools.Invitato]:
+        membri = tools.get_family_members(session["Famiglia"])
         for m in membri:
-            m["Allergie"] = [k for k, v in json.loads(m["Allergie"]).items() if v == 1]
+            m.allergie = [k for k, v in json.loads(m.allergie).items() if v == 1]
         return membri
 
-    if tools.is_logged_in(DB):
+    if tools.is_logged_in():
         if request.method == "POST":
             if request.form.get("csrf") != session.get("csrf"):
                 membri = fetch_membri()
@@ -389,11 +392,14 @@ def conferma() -> Response:
                     membri = fetch_membri()
                     flash("Assicurati di aver riempito tutti i campi.", "errore")
                     return render_template("conferma.html", famiglia=membri), 400
-                with tools.DBHandler(**DB) as dbh:
-                    res = dbh.query(
-                        "UPDATE Invitati SET Tipo=%s, Allergie=%s, Partecipa=%s, Età=%s WHERE Id=%s;",
-                        (tipo, json.dumps(allergie), partecipa, età, membro),
-                    )
+                with tools.session.begin() as s:
+                    stmt = update(tools.Invitato).values(
+                        tipo=tipo,
+                        allergie=json.dumps(allergie),
+                        partecipa=int(partecipa),
+                        età=età,
+                    ).where(tools.Invitato.id == membro)
+                    res = s.execute(stmt)
                 if res != False:
                     membri = fetch_membri()
                     flash("Membro aggiornato con successo.", "ok")
@@ -412,7 +418,7 @@ def conferma() -> Response:
                     return render_template("conferma.html", famiglia=membri), 400
 
                 famiglia = session["Famiglia"]
-                if tools.create_user(DB, nome, cognome, famiglia):
+                if tools.create_user(nome, cognome, famiglia):
                     membri = fetch_membri()
                     flash("Membro aggiunto con successo.", "ok")
                     return render_template("conferma.html", famiglia=membri), 200
@@ -434,7 +440,7 @@ def conferma() -> Response:
 
 @app.route("/accedi", methods=["GET", "POST"])
 def accedi() -> Response:
-    if tools.is_logged_in(DB):
+    if tools.is_logged_in():
         return redirect(url_for("home"))
 
     if request.method == "POST":
@@ -448,7 +454,7 @@ def accedi() -> Response:
             flash("Assicurati di aver riempito tutti i campi.", "errore")
             return render_template("accedi.html"), 400
 
-        if tools.login_user(DB, nome, cognome):
+        if tools.login_user(nome, cognome):
             flash("Login eseguito con successo.", "ok")
             return redirect(url_for("conferma"))
 
@@ -472,7 +478,7 @@ def galleria() -> Response:
         return foto
 
     if request.method == "POST":
-        if not tools.is_logged_in(DB):
+        if not tools.is_logged_in():
             flash("Devi aver eseguito il login per caricare delle immagini.", "errore")
             return redirect(url_for("accedi"))
 

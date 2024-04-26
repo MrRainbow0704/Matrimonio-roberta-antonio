@@ -7,181 +7,181 @@
 
 <div class="d-flex justify-content-between align-items-baseline flex-wrap">
     {% for membro in famiglia %}
-    <section class="p-2 m-2 flex-grow-1 pb-4" id="membro-{{ membro.Id }}">
+    <section class="p-2 m-2 flex-grow-1 pb-4" id="membro-{{ membro.id }}">
         <h3>
 
-            {{ membro.Nome | capitalize }}
+            {{ membro.nome | capitalize }}
 
-            {{ membro.Cognome | capitalize }}
+            {{ membro.cognome | capitalize }}
         </h3>
         <form method="post" class="center">
             <input type="hidden" name="csrf" value="{{ csrf_token }}">
-            <input type="hidden" name="membro" value="{{ membro.Id }}">
+            <input type="hidden" name="membro" value="{{ membro.id }}">
             <label class="form-label">Partecipa</label>
-            <fieldset class="mb-3 Id-tipo" id="{{ membro.Id }}-partecipa">
+            <fieldset class="mb-3 Id-tipo" id="{{ membro.id }}-partecipa">
                 <span>
-                    <input type="radio" class="form-check-input" name="partecipa" id="{{ membro.Id }}-partecipa-si"
-                        value="1" {% if membro.Partecipa %} checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-partecipa-si">Si</label>
+                    <input type="radio" class="form-check-input" name="partecipa" id="{{ membro.id }}-partecipa-si"
+                        value="1" {% if membro.partecipa %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-partecipa-si">Si</label>
                 </span>
                 <span>
-                    <input type="radio" class="form-check-input" name="partecipa" id="{{ membro.Id }}-partecipa-no"
-                        value="0" {% if not membro.Partecipa %} checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-partecipa-no">No</label>
+                    <input type="radio" class="form-check-input" name="partecipa" id="{{ membro.id }}-partecipa-no"
+                        value="0" {% if not membro.partecipa %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-partecipa-no">No</label>
                 </span>
             </fieldset>
             <label class="form-label">Tipo</label>
-            <fieldset class="mb-3" id="{{ membro.Id }}-tipo">
+            <fieldset class="mb-3" id="{{ membro.id }}-tipo">
                 <span>
-                    <input onclick="selezionaAdulto({{ membro.Id }});" class="form-check-input" type="radio" name="tipo"
-                        id="{{ membro.Id }}-tipo-adulto" value="adulto" {% if membro.Tipo == "adulto" %}
+                    <input onclick="selezionaAdulto({{ membro.id }});" class="form-check-input" type="radio" name="tipo"
+                        id="{{ membro.id }}-tipo-adulto" value="adulto" {% if membro.tipo == "adulto" %}
                         checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-tipo-adulto">Adulto</label>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-tipo-adulto">Adulto</label>
                 </span>
                 <span>
-                    <input onclick="selezionaBambino({{ membro.Id }});" class="form-check-input" type="radio"
-                        name="tipo" id="{{ membro.Id }}-tipo-bambino" value="bambino" {% if membro.Tipo == "bambino" %}
+                    <input onclick="selezionaBambino({{ membro.id }});" class="form-check-input" type="radio"
+                        name="tipo" id="{{ membro.id }}-tipo-bambino" value="bambino" {% if membro.tipo == "bambino" %}
                         checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-tipo-bambino">Bambino</label>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-tipo-bambino">Bambino</label>
                 </span>
             </fieldset>
             <!-- INIZIO sezione solo per bambini -->
-            <label class="form-label solo-bambino-{{ membro.Id }}" {% if membro.Tipo == "adulto" %}
+            <label class="form-label solo-bambino-{{ membro.id }}" {% if membro.tipo == "adulto" %}
                 hidden{% endif %}>Età bambino</label>
-            <fieldset class="mb-3 solo-bambino-{{ membro.Id }}" id="{{ membro.Id }}-età" {% if membro.Tipo == "adulto" %}
+            <fieldset class="mb-3 solo-bambino-{{ membro.id }}" id="{{ membro.id }}-età" {% if membro.tipo == "adulto" %}
                 hidden{% endif %}>
                 <span>
-                    <input class="form-check-input" type="radio" name="età" id="{{ membro.Id }}-età-10+" value="10+"
-                        {% if membro.Età == "10+" %} checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-età-10+">Più di 10 anni</label>
+                    <input class="form-check-input" type="radio" name="età" id="{{ membro.id }}-età-10+" value="10+"
+                        {% if membro.età == "10+" %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-età-10+">Più di 10 anni</label>
                 </span>
                 <span>
-                    <input class="form-check-input" type="radio" name="età" id="{{ membro.Id }}-età-4-10" value="4-10"
-                        {% if membro.Età == "4-10" %} checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-età-4-10">Da 4 a 10 anni</label>
+                    <input class="form-check-input" type="radio" name="età" id="{{ membro.id }}-età-4-10" value="4-10"
+                        {% if membro.età == "4-10" %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-età-4-10">Da 4 a 10 anni</label>
                 </span>
                 <span>
-                    <input class="form-check-input" type="radio" name="età" id="{{ membro.Id }}-età-4-" value="4-"
-                        {% if membro.Età == "4-" %} checked{% endif %}>
-                    <label class="form-ckeck-label" for="{{ membro.Id }}-età-4-">Meno di 4 anni</label>
+                    <input class="form-check-input" type="radio" name="età" id="{{ membro.id }}-età-4-" value="4-"
+                        {% if membro.età == "4-" %} checked{% endif %}>
+                    <label class="form-ckeck-label" for="{{ membro.id }}-età-4-">Meno di 4 anni</label>
                 </span>
             </fieldset>
             <!-- FINE sezione solo per bambini -->
             <label class="form-label">Allergie</label>
-            <fieldset class="mb-3 d-flex flex-wrap flex-column" id="{{ membro.Id }}-allergie">
+            <fieldset class="mb-3 d-flex flex-wrap flex-column" id="{{ membro.id }}-allergie">
                 <span>
-                    <input {% if "anidride-solforosa" in membro.Allergie %} checked{% endif %} class="form-check-input"
+                    <input {% if "anidride-solforosa" in membro.allergie %} checked{% endif %} class="form-check-input"
                         type="checkbox" name="allergie-anidride-solforosa"
-                        id="{{ membro.Id }}-allergie-anidride-solforosa" value="anidride-solforosa">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-anidride-solforosa">
+                        id="{{ membro.id }}-allergie-anidride-solforosa" value="anidride-solforosa">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-anidride-solforosa">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/anidride-solforosa.png') }}">
                         Anidride solforosa
                     </label>
                 </span>
                 <span>
-                    <input {% if "arachidi" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-arachidi" id="{{ membro.Id }}-allergie-arachidi"
+                    <input {% if "arachidi" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-arachidi" id="{{ membro.id }}-allergie-arachidi"
                         value="arachidi">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-arachidi">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-arachidi">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/arachidi.png') }}">
                         Arachidi
                     </label>
                 </span>
                 <span>
-                    <input {% if "crostacei" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-crostacei" id="{{ membro.Id }}-allergie-crostacei"
+                    <input {% if "crostacei" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-crostacei" id="{{ membro.id }}-allergie-crostacei"
                         value="crostacei">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-crostacei">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-crostacei">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/crostacei.png') }}">
                         Crostacei
                     </label>
                 </span>
                 <span>
-                    <input {% if "frutta-a-guscio" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-frutta-a-guscio" id="{{ membro.Id }}-allergie-frutta-a-guscio"
+                    <input {% if "frutta-a-guscio" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-frutta-a-guscio" id="{{ membro.id }}-allergie-frutta-a-guscio"
                         value="frutta-a-guscio">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-frutta-a-guscio">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-frutta-a-guscio">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/frutta-a-guscio.png') }}">
                         Frutta a guscio
                     </label>
                 </span>
                 <span>
-                    <input {% if "glutine" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-glutine" id="{{ membro.Id }}-allergie-glutine" value="glutine">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-glutine">
+                    <input {% if "glutine" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-glutine" id="{{ membro.id }}-allergie-glutine" value="glutine">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-glutine">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/glutine.png') }}">
                         Glutine
                     </label>
                 </span>
                 <span>
-                    <input {% if "latte" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-latte" id="{{ membro.Id }}-allergie-latte" value="latte">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-latte">
+                    <input {% if "latte" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-latte" id="{{ membro.id }}-allergie-latte" value="latte">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-latte">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/latte.png') }}">
                         Latte
                     </label>
                 </span>
                 <span>
-                    <input {% if "lupini" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-lupini" id="{{ membro.Id }}-allergie-lupini" value="lupini">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-lupini">
+                    <input {% if "lupini" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-lupini" id="{{ membro.id }}-allergie-lupini" value="lupini">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-lupini">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/lupini.png') }}">
                         Lupini
                     </label>
                 </span>
                 <span>
-                    <input {% if "molluschi" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-molluschi" id="{{ membro.Id }}-allergie-molluschi"
+                    <input {% if "molluschi" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-molluschi" id="{{ membro.id }}-allergie-molluschi"
                         value="molluschi">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-molluschi">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-molluschi">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/molluschi.png') }}">
                         Molluschi
                     </label>
                 </span>
                 <span>
-                    <input {% if "pesce" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-pesce" id="{{ membro.Id }}-allergie-pesce" value="pesce">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-pesce">
+                    <input {% if "pesce" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-pesce" id="{{ membro.id }}-allergie-pesce" value="pesce">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-pesce">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/pesce.png') }}">
                         Pesce
                     </label>
                 </span>
                 <span>
-                    <input {% if "sedano" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-sedano" id="{{ membro.Id }}-allergie-sedano" value="sedano">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-sedano">
+                    <input {% if "sedano" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-sedano" id="{{ membro.id }}-allergie-sedano" value="sedano">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-sedano">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/sedano.png') }}">
                         Sedano
                     </label>
                 </span>
                 <span>
-                    <input {% if "senape" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-senape" id="{{ membro.Id }}-allergie-senape" value="senape">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-senape">
+                    <input {% if "senape" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-senape" id="{{ membro.id }}-allergie-senape" value="senape">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-senape">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/senape.png') }}">
                         Senape
                     </label>
                 </span>
                 <span>
-                    <input {% if "sesamo" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-sesamo" id="{{ membro.Id }}-allergie-sesamo" value="sesamo">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-sesamo">
+                    <input {% if "sesamo" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-sesamo" id="{{ membro.id }}-allergie-sesamo" value="sesamo">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-sesamo">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/sesamo.png') }}">
                         Sesamo
                     </label>
                 </span>
                 <span>
-                    <input {% if "soia" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-soia" id="{{ membro.Id }}-allergie-soia" value="soia">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-soia">
+                    <input {% if "soia" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-soia" id="{{ membro.id }}-allergie-soia" value="soia">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-soia">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/soia.png') }}">
                         Soia
                     </label>
                 </span>
                 <span>
-                    <input {% if "uova" in membro.Allergie %} checked{% endif %} class="form-check-input"
-                        type="checkbox" name="allergie-uova" id="{{ membro.Id }}-allergie-uova" value="uova">
-                    <label class="form-check-label" for="{{ membro.Id }}-allergie-uova">
+                    <input {% if "uova" in membro.allergie %} checked{% endif %} class="form-check-input"
+                        type="checkbox" name="allergie-uova" id="{{ membro.id }}-allergie-uova" value="uova">
+                    <label class="form-check-label" for="{{ membro.id }}-allergie-uova">
                         <img class="icon" src="{{ url_for('static', filename='img/allergie/uova.png') }}">
                         Uova
                     </label>
