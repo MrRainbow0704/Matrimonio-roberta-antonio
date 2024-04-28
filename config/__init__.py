@@ -27,3 +27,4 @@ DB_PORT = int(getenv("DB_PORT", "3306"))
 DB_USER = getenv("DB_USER", "root")
 DB_PASSWD = getenv("DB_PASSWD", None)
 DB_NAME = getenv("DB_NAME", "database")
+DB_MAX_CONNECTION_TRY = 3

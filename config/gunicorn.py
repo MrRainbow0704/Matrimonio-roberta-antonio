@@ -1,5 +1,7 @@
 """Gunicorn config file"""
 
+from . import HOST, PORT, DEBUG
+
 # WSGI application path in pattern MODULE_NAME:VARIABLE_NAME
 wsgi_app = "app:app"
 # The granularity of Error log outputs
@@ -7,9 +9,9 @@ loglevel = "debug"
 # The number of worker processes for handling requests
 workers = 10
 # The socket to bind
-bind = "0.0.0.0:8888"
+bind = f"{HOST}:{PORT}"
 # Restart workers when code changes (development only!)
-reload = False
+reload = DEBUG
 # Write access and error info to /var/log
 accesslog = errorlog = "/var/log/gunicorn/dev.log"
 # Redirect stdout/stderr to log file
