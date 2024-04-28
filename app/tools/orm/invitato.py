@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Boolean, Text, text
+from sqlalchemy import Integer, String, Boolean, text
 from sqlalchemy.orm import mapped_column, Mapped
 from typing import Optional
 from . import Base
@@ -15,10 +15,16 @@ class Invitato(Base):
     nome: Mapped[str] = mapped_column(String(32), nullable=False)
     cognome: Mapped[str] = mapped_column(String(32), nullable=False)
     famiglia: Mapped[int] = mapped_column(Integer, nullable=False)
-    partecipa: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("0"))
-    allergie: Mapped[str] = mapped_column(Text, nullable=False, server_default=allergie)
-    tipo: Mapped[str] = mapped_column(String(8), nullable=False,server_default="adulto")
-    età: Optional[Mapped[str]] = mapped_column(String(4), nullable=True)
+    partecipa: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("0")
+    )
+    allergie: Mapped[str] = mapped_column(
+        String(210), nullable=False, server_default=allergie
+    )
+    tipo: Mapped[str] = mapped_column(
+        String(8), nullable=False, server_default="adulto"
+    )
+    età: Mapped[Optional[str]] = mapped_column(String(4), nullable=True)
 
     def __repr__(self) -> str:
         return (
