@@ -7,7 +7,7 @@ wsgi_app = "app:app"
 # The granularity of Error log outputs
 loglevel = "debug"
 # The number of worker processes for handling requests
-workers = 10
+workers = 5
 # The socket to bind
 bind = f"{HOST}:{PORT}"
 # Restart workers when code changes (development only!)

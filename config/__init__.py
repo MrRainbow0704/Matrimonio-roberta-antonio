@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-MAX_UPLOAD_SIZE = 16 * 1024 * 1024      # 16 gigabyte
+MAX_UPLOAD_SIZE = 16 * 1024 * 1024  # 16 gigabyte
 UPLOAD_DIR = ROOT_DIR / "uploads"
 if not UPLOAD_DIR.exists():
     UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
@@ -28,3 +28,5 @@ DB_USER = getenv("DB_USER", "root")
 DB_PASSWD = getenv("DB_PASSWD", None)
 DB_NAME = getenv("DB_NAME", "database")
 DB_MAX_CONNECTION_TRY = 3
+
+from .gunicorn import *
