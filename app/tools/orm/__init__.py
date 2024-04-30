@@ -37,6 +37,4 @@ for t in range(config.DB_MAX_CONNECTION_TRY):
 else:
     quit(f"Tentativi di connessione al databasse '{DB}' non riusciti.")
 
-Base.metadata.create_all(ENGINE, checkfirst=True)
-
 __all__ = ["Base", "Invitato", "Famiglia", "session", "ENGINE"]
