@@ -5,7 +5,7 @@ import config
 
 
 class Base(DeclarativeBase):
-    pass
+    ...
 
 
 from .invitato import Invitato
