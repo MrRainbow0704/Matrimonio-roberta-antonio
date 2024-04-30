@@ -46,7 +46,7 @@ def lista_nozze() -> Response:
 def admin() -> Response:
     def fetch_invitati() -> list[dict[str, int | str]]:
         with tools.session.begin() as s:
-            stmt = select(tools.Invitato).order_by(tools.Invitato.partecipa, tools.Invitato.famiglia)
+            stmt = select(tools.Invitato).order_by(tools.Invitato.partecipa.desc(), tools.Invitato.famiglia)
             invitati = s.scalars(stmt).all()
 
         # Fai apparire nella lista `i["Allergie"]` solo le allergie presenti.
