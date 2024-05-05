@@ -37,4 +37,4 @@ for t in range(config.DB_MAX_CONNECTION_TRY):
 else:
     quit(f"Tentativi di connessione al databasse '{DB}' non riusciti.")
 
-__all__ = [Base, Invitato, Famiglia, session, ENGINE]
+__all__ = ["Base", "Invitato", "Famiglia", "session", "ENGINE"]
