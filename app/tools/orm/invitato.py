@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Boolean, text
+from sqlalchemy import text, Integer, String, Boolean
 from sqlalchemy.orm import mapped_column, Mapped
 from typing import Optional
 from . import Base

@@ -1,6 +1,6 @@
 import config
 import secrets
-from flask import session, request, Response
+from flask import Response, session, request
 from functools import wraps
 from typing import Callable
 from .general import get_user_from_name, get_user_from_id

@@ -1,4 +1,4 @@
-from typing import Any, Literal, Sequence
+from typing import Literal, Sequence, Any
 from sqlalchemy import select, delete
 from sqlalchemy.exc import MultipleResultsFound, SQLAlchemyError
 from .orm import Invitato, Famiglia, session

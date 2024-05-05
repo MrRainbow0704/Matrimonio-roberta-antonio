@@ -2,17 +2,17 @@ function selezionaAdulto(id) {
 	const cls = `solo-bambino-${id}`;
 	let elements = document.getElementsByClassName(cls);
 	for (let e of elements) {
-        console.log(e);
-        e.hidden = true;
+		console.log(e);
+		e.hidden = true;
 	}
 }
 
 function selezionaBambino(id) {
 	const cls = `solo-bambino-${id}`;
-    let elements = document.getElementsByClassName(cls);
+	let elements = document.getElementsByClassName(cls);
 	for (let e of elements) {
-        console.log(e);
-        e.hidden = false;
+		console.log(e);
+		e.hidden = false;
 	}
 }
 
@@ -25,4 +25,4 @@ function pressed() {
 		var theSplit = a.value.split("\\");
 		fileLabel.innerHTML = theSplit[theSplit.length - 1];
 	}
-};
+}

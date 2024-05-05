@@ -2,11 +2,11 @@ from flask import (
     render_template,
     redirect,
     url_for,
-    session,
-    request,
-    Response,
     flash,
     send_from_directory,
+    Response,
+    session,
+    request,
 )
 from sqlalchemy import select, update
 import json
@@ -49,11 +49,11 @@ def admin() -> Response:
             stmt = select(tools.Invitato).order_by(tools.Invitato.partecipa.desc(), tools.Invitato.famiglia)
             invitati = s.scalars(stmt).all()
 
-        # Fai apparire nella lista `i["Allergie"]` solo le allergie presenti.
         for i in invitati:
             i.allergie = [k for k, v in json.loads(i.allergie).items() if v == 1]
             i.partecipa = "Si" if i.partecipa else "No"
             i.famiglia = tools.get_family_from_id(i.famiglia).nome
+            i.età = "18+" if i.età is None else i.età
         return invitati
 
     def fetch_famiglie() -> list[dict[str, int | str]]:
