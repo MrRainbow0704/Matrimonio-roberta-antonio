@@ -28,3 +28,6 @@
     {% endfor %}
 </section>
 {% endblock main %}
+{% block script %}
+<script src="{{ url_for('static', filename='js/galleria.js') }}"></script>
+{% endblock script %}

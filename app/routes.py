@@ -46,7 +46,9 @@ def lista_nozze() -> Response:
 def admin() -> Response:
     def fetch_invitati() -> list[dict[str, int | str]]:
         with tools.session.begin() as s:
-            stmt = select(tools.Invitato).order_by(tools.Invitato.partecipa.desc(), tools.Invitato.famiglia)
+            stmt = select(tools.Invitato).order_by(
+                tools.Invitato.partecipa.desc(), tools.Invitato.famiglia
+            )
             invitati = s.scalars(stmt).all()
 
         for i in invitati:
@@ -75,10 +77,12 @@ def admin() -> Response:
                 owner = tools.get_user_from_id(owner_id)
                 famiglia = tools.get_family_from_id(owner.famiglia)
                 user = {
-                    "nome": f'{owner.nome.capitalize()} {owner.cognome.capitalize()}',
+                    "nome": f"{owner.nome.capitalize()} {owner.cognome.capitalize()}",
                     "famiglia": famiglia.nome,
                 }
-                file_size = os.path.getsize(os.path.join(app.config["UPLOAD_FOLDER"], file))
+                file_size = os.path.getsize(
+                    os.path.join(app.config["UPLOAD_FOLDER"], file)
+                )
                 size = round(file_size / 1024, 2)
                 foto.append({"url": url, "user": user, "size": size})
         return foto
@@ -350,64 +354,80 @@ def conferma() -> Response:
             m.allergie = [k for k, v in json.loads(m.allergie).items() if v == 1]
         return membri
 
+    def aggiorna_membro(data: dict):
+        allergeni = [
+            "anidride-solforosa",
+            "arachidi",
+            "crostacei",
+            "frutta-a-guscio",
+            "glutine",
+            "latte",
+            "lupini",
+            "molluschi",
+            "pesce",
+            "sedano",
+            "senape",
+            "sesamo",
+            "soia",
+            "uova",
+        ]
+        id = data["id"]
+        tipo = data["tipo"]
+        partecipa = data["partecipa"]
+        allergie = data["allergie"]
+        if tipo == "bambino":
+            età = data["età"]
+        else:
+            età = None
+        allergie = {a: (1 if a in allergie else 0) for a in allergeni}
+        if tools.empty_input(id, tipo, partecipa, allergie) or (
+            tipo == "bambino" and età is None
+        ):
+            return "EmptyInput"
+        with tools.session.begin() as s:
+            stmt = (
+                update(tools.Invitato)
+                .values(
+                    tipo=tipo,
+                    allergie=json.dumps(allergie),
+                    partecipa=int(partecipa),
+                    età=età,
+                )
+                .where(tools.Invitato.id == id)
+            )
+            res = s.execute(stmt)
+        if res != False:
+            return "Ok"
+        return "UnexpectedError"
+
     if tools.is_logged_in():
         if request.method == "POST":
-            if request.form.get("csrf") != session.get("csrf"):
+            if not request.is_json and request.form.get("csrf") != session.get("csrf"):
                 membri = fetch_membri()
                 flash("La richiesta non contiene il CSRF token.", "errore")
                 return render_template("conferma.html", famiglia=membri), 403
 
-            if request.form.get("membro"):
-                membro = request.form.get("membro")
-                tipo = request.form.get("tipo")
-                partecipa = request.form.get("partecipa")
-                if tipo == "bambino":
-                    età = request.form.get("età")
-                else:
-                    età = None
-                allergeni = [
-                    "anidride-solforosa",
-                    "arachidi",
-                    "crostacei",
-                    "frutta-a-guscio",
-                    "glutine",
-                    "latte",
-                    "lupini",
-                    "molluschi",
-                    "pesce",
-                    "sedano",
-                    "senape",
-                    "sesamo",
-                    "soia",
-                    "uova",
-                ]
-
-                allergie = {
-                    a: (1 if request.form.get(f"allergie-{a}") else 0)
-                    for a in allergeni
-                }
-                if tools.empty_input(membro, tipo, partecipa, allergie) or (
-                    tipo == "bambino" and età is None
-                ):
-                    membri = fetch_membri()
-                    flash("Assicurati di aver riempito tutti i campi.", "errore")
-                    return render_template("conferma.html", famiglia=membri), 400
-                with tools.session.begin() as s:
-                    stmt = update(tools.Invitato).values(
-                        tipo=tipo,
-                        allergie=json.dumps(allergie),
-                        partecipa=int(partecipa),
-                        età=età,
-                    ).where(tools.Invitato.id == membro)
-                    res = s.execute(stmt)
-                if res != False:
-                    membri = fetch_membri()
-                    flash("Membro aggiornato con successo.", "ok")
-                    return render_template("conferma.html", famiglia=membri), 200
-
+            if request.is_json and request.json.get("csrf") != session.get("csrf"):
                 membri = fetch_membri()
-                flash("C'è stato un errore imprevisto.", "errore")
-                return render_template("conferma.html", famiglia=membri), 500
+                flash("La richiesta non contiene il CSRF token.", "errore")
+                return render_template("conferma.html", famiglia=membri), 403
+            if request.is_json and request.json.get("membro"):
+                if not request.is_json:
+                    membri = fetch_membri()
+                    flash("Il tipo della richiesta non è JSON.", "errore")
+                    return render_template("conferma.html", famiglia=membri), 415
+                data = request.json.get("data")
+                for membro in data:
+                    m = membro["nome"]
+                    r = aggiorna_membro(membro)
+                    if r == "EmptyInput":
+                        flash("Assicurati di aver riempito tutti i campi.", "errore")
+                    if r == "UnexpectedError":
+                        flash(f"C'è stato un errore imprevisto aggiornando {m!r}.", "errore")
+                    else:
+                        flash(f"Membro {m!r} aggiornato con successo.", "ok")
+                membri = fetch_membri()
+                return render_template("conferma.html", famiglia=membri), 200
 
             elif request.form.get("nuovo"):
                 nome = request.form.get("nome").lower().strip()
