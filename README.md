@@ -6,7 +6,7 @@ Il backend del sito è scritto in Python usando la libreria `Flask` che abilita 
 
 Il frontend del sito è scritto con una combinazione di CSS3 e JavaScript vanilla e [Bootstrap 5.3](https://getbootstrap.com).
 
-Per comunicare con il database il sito usa la libreria `mysql.connector` per Python e quindi richiede l'utilizzo di un database MySQL o MariaDB.
+Per comunicare con il database il sito usa un ORM gestito dalla libreria `SQLAlchemy` per Python e quindi richiede l'utilizzo di un database MySQL o MariaDB.
 
 Per funzionare correttamente, il sito richiede 
 la configurazione di un file `.env` seguendo la falsariga del file `.env.template` contenuto nella repo oltre all'installazione dei moduli per Python elencati in `requirements.txt`, installabili con il semplice comando: 
